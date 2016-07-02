@@ -1,0 +1,126 @@
+---
+title: Quick Start - Vanilla Engine Template
+---
+
+## Overview
+
+The purpose of the Vanilla template is for developing new engine when you find other engine templates do not fit your needs. This template provides a skeleton to kick start new engine development.
+
+By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts the number of events and multiple it by the algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedsResult.
+
+
+## Usage
+
+### Event Data Requirements
+
+No special event requirement
+
+### Input Query
+
+- a string
+
+### Output PredictedResult
+
+- a string
+
+## 1. Install and Run PredictionIO
+
+<%= partial 'shared/quickstart/install' %>
+
+## 2. Create a new Engine from an Engine Template
+
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyNewEngine', template_name: 'Vanilla Engine Template', template_repo: 'template-scala-parallel-vanilla' } %>
+
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4a. Collecting Data
+
+As long as the appId is valid, this Vanilla Engine template does not require event data in your app in order to work.
+
+## 4b. Import Sample Data
+
+As long as the appId is valid, this Vanilla Engine template does not require event data in your app in order to work.
+
+## 5. Deploy the Engine as a Service
+
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyNewEngine' } %>
+
+<%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyNewEngine' } %>
+
+## 6. Use the Engine
+
+Now, You can try to retrieve predicted results. The engine accepts JSON query with the field 'q': `{ "q" : "foo" }`. A prefix is added to the query data and return as PredictedResult.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{ "q": "foo" }' http://localhost:8000/queries.json
+
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({ "q": "foo" })
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('q'=> "foo"));
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('q' => 'foo')
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+
+// query
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "q", "foo"
+    ));
+```
+  </div>
+</div>
+
+The following is sample JSON response:
+
+```
+{"p":"0-foo"}
+```
+
+*MyNewEngine* is now running. You can start modifying it to build your new engine!
+
+<%= partial 'shared/quickstart/production' %>
+
+#### [Next: DASE Components Explained](/templates/vanilla/dase/)

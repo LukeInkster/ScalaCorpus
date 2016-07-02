@@ -1,0 +1,13 @@
+@(field: Field, label: String)(implicit ctx: Context)
+
+<li class="field">
+  <label for="@field.id">@label</label>
+  <input
+  class="passwd"
+  type="password"
+  required="required"
+  name="@field.name"
+  id="@field.id"
+  value="@field.value"/>
+  @errMsg(field)
+</li>

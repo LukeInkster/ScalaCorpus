@@ -1,0 +1,33 @@
+#active-navigation {
+  float: left;
+  font-size: 40px;
+  height: 40px;
+  margin: 0 0 0 20px;
+  color: $header-icon-color;
+  display: block;
+  i {
+    vertical-align: top;
+  }
+}
+
+@include medium {
+  #active-navigation {
+    display: none;
+  }
+
+  .active-navigation {
+    #main {
+      margin-right: 0;
+    }
+  }
+}
+
+// Large
+@include x-large {
+  #table-of-contents {
+    display: block;
+    &.empty {
+      display: none;
+    }
+  }
+}

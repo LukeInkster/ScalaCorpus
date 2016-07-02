@@ -1,0 +1,17 @@
+@(title: String, active: String, moreCss: Html = Html(""), moreJs: Html = Html(""))(body: Html)(implicit ctx: Context)
+
+@modMenu = {
+  @mod.menu(active)
+}
+
+@evenMoreJs = {
+@moreJs
+}
+
+@base.layout(
+title = title,
+moreJs = evenMoreJs,
+moreCss = moreCss,
+menu = modMenu.some) {
+@body
+}

@@ -1,0 +1,9 @@
+#nav-page {
+  font-size: 24px;
+  white-space: nowrap;
+  display: inline-block;
+  margin: 15px 25px 0 -100px;
+  a {
+    color: $nav-page-icon-color;
+  }
+}

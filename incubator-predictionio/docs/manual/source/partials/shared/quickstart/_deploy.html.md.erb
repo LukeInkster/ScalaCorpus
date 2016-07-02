@@ -1,0 +1,55 @@
+
+### Building
+
+Start with building your *<%= engine_name %>* engine. Run the following command:
+
+```
+$ pio build --verbose
+```
+
+This command should take few minutes for the first time; all subsequent builds
+should be less than a minute. You can also run it without `--verbose` if you don't want to see all the log messages.
+
+Upon successful build, you should see a console message similar to the
+following.
+
+```
+[INFO] [Console$] Your engine is ready for training.
+```
+
+### Training the Predictive Model
+
+To train your engine, run the following command:
+
+```
+$ pio train
+```
+
+When your engine is trained successfully, you should see a console message
+similar to the following.
+
+```
+[INFO] [CoreWorkflow$] Training completed successfully.
+```
+
+### Deploying the Engine
+
+Now your engine is ready to deploy. Run:
+
+```
+$ pio deploy
+```
+
+When the engine is deployed successfully and running, you should see a console message similar to the following:
+
+```
+[INFO] [HttpListener] Bound to /0.0.0.0:8000
+[INFO] [MasterActor] Bind successful. Ready to serve.
+```
+
+Do not kill the deployed engine process.
+
+By default, the deployed engine binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
+
+![Engine Status](/images/engine-server.png)

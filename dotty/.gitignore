@@ -1,0 +1,43 @@
+*.DS_Store
+*.class
+*.log
+*~
+*.swp
+
+# sbt specific
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+project/local-plugins.sbt
+.history
+
+# Scala-IDE specific
+.scala_dependencies
+.cache
+.classpath
+.project
+.settings
+classes/
+
+# idea
+.idea
+.idea_modules
+/.worksheet/
+
+# Partest
+tests/partest-generated/
+tests/locks/
+/test-classes/
+
+# Used in tests
+scala-scala
+
+# Ignore output files but keep the directory
+out/
+!out/.keep
+
+# Ignore build-file
+.packages

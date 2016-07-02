@@ -1,0 +1,33 @@
+# docker related files
+.dockerignore
+Dockerfile*
+
+# source repository history
+.git
+
+# unneeded
+.travis.yml
+
+# tool configuration
+.idea
+*.iml
+.classpath
+.settings
+.Rproj.user
+.reviewboardrc
+
+# build directories
+docker-volumes
+target
+*/target
+*/*/target
+
+# assets (keep dist/img directory)
+src/main/resources/assets/node_modules
+src/main/resources/assets/css
+src/main/resources/assets/js
+src/main/resources/assets/test
+src/main/resources/assets/.git
+src/main/resources/assets/.gitattributes
+src/main/resources/assets/.gitignore
+

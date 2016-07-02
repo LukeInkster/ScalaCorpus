@@ -1,0 +1,9 @@
+.idea
+demo.iml
+logs/*
+*/*.iml
+*/target
+target
+checkpoint
+derby.log
+metastore_db/

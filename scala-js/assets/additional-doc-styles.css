@@ -1,0 +1,20 @@
+.badge-ecma6 {
+  background-color: #E68A00;
+}
+
+.badge-non-std {
+  background-color: #B94A48;
+}
+
+.badge-external {
+  background-color: #710071;
+}
+
+a.badge-external {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+a[href].badge-external:hover {
+  text-decoration: underline;
+}

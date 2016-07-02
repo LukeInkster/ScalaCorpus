@@ -1,0 +1,192 @@
+/*
+ * Copyright 2016 LinkedIn Corp. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+// TODO: codecoverage plugin
+// TODO: checkstyle plugin
+
+buildscript {
+  repositories {
+    jcenter()
+    maven {
+      // For avro compiler plugin gradle-avro-plugin
+      url 'https://plugins.gradle.org/m2/'
+    }
+  }
+
+  dependencies {
+    classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.7.0"
+    classpath "org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2"
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+  }
+}
+
+allprojects {
+  apply plugin: 'eclipse'
+  apply plugin: 'idea'
+  repositories {
+    jcenter()
+  }
+}
+
+apply from: 'build-scripts/rat.gradle'
+
+rat {
+  excludes = [
+    '*.patch',
+    '**/*.avsc',
+    '**/*.acl',
+    '**/*.iml',
+    '**/*.ipr',
+    '**/*.iws',
+    '**/*.json',
+    '**/*.avro',
+    '**/.classpath',
+    '**/.cache/**',
+    '**/.git/**',
+    '**/.gitignore',
+    '**/.gradle/**',
+    '**/.idea/**',
+    '**/.project',
+    '**/.settings/**',
+    '**/.DS_Store/**',
+    '**/build/**',
+    '.reviewboardrc',
+    '.travis.yml',
+    'dev-scripts/license_template.txt',
+    'gradle/wrapper/**',
+    'gradlew',
+    'gradlew.bat',
+    'README.md',
+    'LICENSE',
+    'NOTICE',
+    'gradle.properties',
+    'log4j.properties',
+    'photon-ml/src/main/resources/**',
+    'photon-ml/src/test/resources/**',
+    'photon-ml/src/integTest/resources/**',
+    'photon-ml/LINEAR_REGRESSION*/**',
+    'photon-ml/LOGISTIC_REGRESSION*/**',
+    'photon-ml/POISSON_REGRESSION*/**',
+    'photon-test/src/test/resources/**',
+    'tests.sh'
+  ]
+}
+
+subprojects {
+  // Put the build dir into the rootProject
+  buildDir = "../build/$name"
+
+  configurations.all {
+    // Brought in by azkaban2, but not needed
+    exclude group: 'commons-dbutils'
+    exclude group: 'commons-fileupload'
+    exclude group: 'commons-pool'
+    exclude group: 'com.h2database'
+    exclude group: 'mysql'
+    exclude group: 'com.google.collections', module: 'google-collections'
+    exclude group: 'kafka', module: 'kafka'
+  }
+}
+
+subprojects {
+  plugins.withType(JavaPlugin) {
+    tasks.withType(Test) {
+      useTestNG()
+
+      options {
+        parallel = 'methods'
+        threadCount = 4
+        listeners << 'com.linkedin.photon.ml.test.FailOnSkipListener'
+      }
+
+      afterSuite { desc, result ->
+        if (!desc.parent) {
+          println ":${project.name} -- Executed ${result.testCount} tests: ${result.successfulTestCount} succeeded, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped"
+        }
+      }
+
+      // Forward standard out from child JVMs to the console
+      testLogging {
+        showStackTraces = true
+        showStandardStreams = true
+        showExceptions = true
+        showCauses = true
+        displayGranularity = maxGranularity
+        exceptionFormat = 'full'
+      }
+
+      outputs.upToDateWhen { false }
+
+      systemProperty "log4j.configuration", "file:${project.rootDir}/log4j.properties"
+
+      minHeapSize = "2G"
+      maxHeapSize = "8G"
+    }
+
+    dependencies {
+      testCompile 'org.testng:testng:6.9.9'
+    }
+
+    sourceCompatibility = 1.8
+  }
+
+  tasks.withType(ScalaCompile) {
+    scalaCompileOptions.additionalParameters = ["-feature", "-deprecation", "-verbose", "-optimize", "-unchecked", "-Yinline-warnings", "-g:vars"]
+    scalaCompileOptions.useAnt = false
+
+    configure(scalaCompileOptions.forkOptions) {
+      memoryMaximumSize = '1g'
+    }
+    configurations.zinc.transitive = true
+  }
+
+  apply plugin: 'scalaStyle'
+
+  // scalaStyle config. This evals after ScalaPlugin so that it will have access to sourceSets
+  plugins.withType(ScalaPlugin) {
+    afterEvaluate {
+      scalaStyle {
+        configLocation = 'scalastyle-config.xml'
+        includeTestSourceDirectory = false
+        source = sourceSets.main.scala
+      }
+    }
+  }
+
+  idea {
+    module {
+      testSourceDirs += file('src/integTest/java')
+      testSourceDirs += file('src/integTest/scala')
+      testSourceDirs += file('src/test/scala')
+    }
+  }
+}
+
+// Task to generate the Gradle wrapper scripts
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.8'
+}
+
+// For LinkedIn internal builds, apply the LinkedIn-specific build file
+if (project.hasProperty('overrideBuildEnvironment')) {
+  apply from: project.overrideBuildEnvironment
+} else {
+  // Specify Jar versions here instead of within gradle.properties
+  // This will provide overriding ability for internal builds
+  subprojects {
+    tasks.withType(Jar) {
+      version '1.0.0'
+    }
+  }
+}

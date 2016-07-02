@@ -1,0 +1,4 @@
+scalalib/src/
+target/
+*.dot
+*.ppm

@@ -1,0 +1,25 @@
+#global {
+  min-width: 320px;
+  background-color: $global-background-color;
+}
+
+#main {
+  background-color: $main-background-color;
+  padding: 0 0 25px 0;
+  width: 1100px;
+  min-height: 800px;
+}
+
+.col-main {
+  margin-left: 0;
+}
+
+@include medium {
+  .col-main {
+    margin-left: 300px;
+  }
+}
+
+#page {
+  margin-top: $header-height + $search-box-height + ($search-bar-row-vertical-padding * 2) + 50px; // header height
+}

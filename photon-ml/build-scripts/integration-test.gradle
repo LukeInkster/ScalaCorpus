@@ -1,0 +1,84 @@
+/*
+ * Copyright 2016 LinkedIn Corp. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+// ATTENTION: this is a simple integration test set-up, scala.gradle (the cross build script) also contains a specific
+// configuration for its use cases.
+// When the cross-build script is applied, this script SHOULD NOT BE USED IN THE SAME TIME.
+
+// Set up integration test tasks
+sourceSets {
+  integTest {
+    compileClasspath += main.output + test.output
+    runtimeClasspath += main.output + test.output
+
+    java.srcDir file('src/integTest/java')
+    scala.srcDir file('src/integTest/scala')
+    resources.srcDir file('src/integTest/resources')
+  }
+}
+
+configurations {
+  integTestCompile {
+    description = "Integration test compilation"
+    extendsFrom testCompile
+  }
+
+  integTestRuntime {
+    description = "Integration test runtime"
+    extendsFrom testRuntime
+  }
+}
+
+task integTest(type: Test) {
+  testClassesDir = sourceSets.integTest.output.classesDir
+  classpath = sourceSets.integTest.runtimeClasspath
+  // force always rerunning tests
+  outputs.upToDateWhen { false }
+
+  systemProperty "log4j.configuration", "file:$rootProject.projectDir/log4j.properties"
+}
+check.dependsOn integTest
+
+plugins.withType(JavaPlugin) {
+  integTest {
+    useTestNG()
+
+    options {
+      parallel = 'methods'
+      threadCount = 4
+      listeners << 'com.linkedin.photon.ml.test.FailOnSkipListener'
+    }
+
+    afterSuite { desc, result ->
+      if (!desc.parent) {
+        println ":${project.name} -- Executed ${result.testCount} tests: ${result.successfulTestCount} succeeded, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped"
+      }
+    }
+    // Forward standard out from child JVMs to the console
+    testLogging {
+      showStackTraces = true
+      showStandardStreams = true
+      showExceptions = true
+      showCauses = true
+      displayGranularity = maxGranularity
+      exceptionFormat = 'full'
+    }
+
+    systemProperty "log4j.configuration", "file:${project.rootDir}/log4j.properties"
+  }
+
+  dependencies {
+    testCompile 'org.testng:testng:6.9.9'
+  }
+}

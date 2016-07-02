@@ -1,0 +1,54 @@
+First you need to [install PredictionIO <%= data.versions.pio %>](/install) (if
+you haven't done it).
+
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
+For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/PredictionIO/bin`:
+
+```
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
+```
+
+NOTE: If you launched **PredictionIO AWS instance**, the path is located at
+`/opt/PredictionIO/bin`.
+
+Once you have completed the installation process, please make sure all the
+components (PredictionIO Event Server, Elasticsearch, and HBase) are up and
+running.
+
+NOTE: If you launched **PredictionIO AWS instance**, you can skip `pio-start-all`. All components should have been started automatically.
+
+If you are using PostgreSQL or MySQL, run the following to start PredictionIO
+Event Server:
+
+```
+$ pio eventserver &
+```
+
+If instead you are running HBase and Elasticsearch, run the following to start
+all PredictionIO Event Server, HBase, and Elasticsearch:
+
+```
+$ pio-start-all
+```
+
+You can check the status by running:
+
+```
+$ pio status
+```
+
+If everything is OK, you should see the following outputs:
+
+```
+...
+
+(sleeping 5 seconds for all messages to show up...)
+Your system is all ready to go.
+```
+
+NOTE: To further troubleshoot, please see [FAQ - Using
+PredictionIO](/resources/faq/#using-predictionio).
+
+<!-- dummy markdown link needed if code block is last -->
+[]()

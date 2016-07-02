@@ -1,0 +1,9 @@
+junit_tests(name='java',
+  dependencies=[
+    '3rdparty/jvm/io/netty',
+    'finagle/finagle-mux',
+    'util/util-core',
+  ],
+  fatal_warnings=False,
+  sources=rglobs('*.java')
+)

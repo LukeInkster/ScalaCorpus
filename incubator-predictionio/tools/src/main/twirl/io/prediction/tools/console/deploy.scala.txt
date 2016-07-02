@@ -1,0 +1,29 @@
+Usage: pio deploy [--ip <value>] [--port <value>]
+                  [--engine-instance-id <value>]
+                  [--feedback] [--accesskey <value>]
+                  [--event-server-ip <value>] [--event-server-port <value>]
+                  [--batch <value>] [--scratch-uri <value>]
+
+Deploy an engine instance as a prediction server. This command will pass all
+pass-through arguments to its underlying spark-submit command.
+
+  --ip <value>
+      IP to bind to. Default: 0.0.0.0
+  --port <value>
+      Port to bind to. Default: 8000
+  --engine-instance-id <value>
+      Engine instance ID.
+  --feedback
+      Enable feedback loop to event server.
+  --accesskey <value>
+      Access key of the App where feedback data will be stored.
+  --event-server-ip <value>
+      Event server IP. Default: 0.0.0.0
+  --event-server-port <value>
+      Event server port. Default: 7070
+  --batch <value>
+      Batch label of the deployment.
+  --scratch-uri
+      URI of the working scratch space. Specify this when you want to have all
+      necessary files transferred to a remote location. You will usually want to
+      specify this when you use --deploy-mode cluster.

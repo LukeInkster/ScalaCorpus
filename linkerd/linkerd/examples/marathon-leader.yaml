@@ -1,0 +1,21 @@
+namers:
+- kind:         io.l5d.marathon
+  experimental: true
+  prefix:       /io.l5d.marathon
+  # Discover the marathon master by leader election
+  dst:          /$/io.buoyant.namer.zk.leader/localhost:2181/marathon/leader
+  uriPrefix:    /marathon
+  ttlMs:        300
+
+routers:
+- protocol: http
+  identifier:
+    kind: io.l5d.methodAndHost
+    httpUriInDst: true
+  baseDtab: |
+    /marathonId => /#/io.l5d.marathon;
+    /host       => /$/io.buoyant.http.domainToPathPfx/marathonId;
+    /http/1.1/* => /host;
+  servers:
+  - port: 4140
+    ip: 0.0.0.0

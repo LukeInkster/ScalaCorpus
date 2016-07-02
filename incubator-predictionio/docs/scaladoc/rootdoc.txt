@@ -1,0 +1,20 @@
+This is the API documentation of PredictionIO.
+
+== Package Structure ==
+
+ - [[io.prediction.controller]] - The common starting point. Building blocks of a prediction engine.
+ - [[io.prediction.data.store]] - Event Store API.
+
+== Experimental Features ==
+
+Classes and methods marked with <span class="experimental badge" style="float:
+none;">Experimental</span> are user-facing features which have not been
+officially adopted by the PredictionIO project. These are subject to change or
+removal in minor releases.
+
+== Developer API ==
+
+Classes and methods marked with <span class="developer badge" style="float:
+none;">Core Developer API</span> are intended for advanced users who want to
+extend PredictionIO through lower level interfaces. These are subject to changes
+or removal in minor releases.

@@ -1,0 +1,30 @@
+scala_library(name='scala',
+  provides = scala_artifact(
+    org = 'com.twitter',
+    name = 'finagle-stats',
+    repo = artifactory,
+  ),
+  dependencies=[
+    '3rdparty/jvm/com/fasterxml/jackson/core:jackson-core',
+    '3rdparty/jvm/com/fasterxml/jackson/core:jackson-databind',
+    '3rdparty/jvm/com/fasterxml/jackson/module:jackson-module-scala',
+    '3rdparty/jvm/io/netty',
+    'science/src/java/com/twitter/common/metrics:metrics',
+    'science/src/java/com/twitter/common/quantity:quantity',
+    'science/src/java/com/twitter/common/stats:util',
+    'science/src/java/com/twitter/common/util:util',
+    'science/src/java/com/twitter/common/util:system-mocks',
+    'finagle/finagle-core',
+    'finagle/finagle-http',
+    'util/util-core',
+    'util/util-events',
+    'util/util-logging',
+    'util/util-registry',
+    'util/util-stats',
+  ],
+  fatal_warnings=True,
+  sources=rglobs('*.scala'),
+  resources=[
+    'finagle/finagle-stats/src/main/resources'
+  ],
+)

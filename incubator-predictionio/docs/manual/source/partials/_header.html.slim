@@ -1,0 +1,18 @@
+header
+  .container#header-wrapper
+    .row
+      .col-sm-12
+        #logo-wrapper
+          span#drawer-toggle
+          a href="#"
+          = link_to 'http://prediction.io/' do
+            = image_tag 'logos/logo.png', alt: 'PredictionIO', id: 'logo'
+        #menu-wrapper
+          #header-nav-options-wrapper
+            ul
+              li>: a href="/" Install & Doc
+              li>: a href="/support" Support
+          #pill-wrapper
+            a.pill.left> href="//templates.prediction.io/" TEMPLATES
+            a.pill.right href="//github.com/PredictionIO/PredictionIO/" OPEN SOURCE
+        = image_tag 'icons/search-glass.png', class: 'mobile-search-bar-toggler hidden-md hidden-lg'

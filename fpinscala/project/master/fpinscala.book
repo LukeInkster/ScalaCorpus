@@ -1,0 +1,9 @@
+book fpinscala #[
+  part 1 #[
+    include errorhandling.chapter
+    include laziness.chapter 
+  ]#
+]# 
+
+
+

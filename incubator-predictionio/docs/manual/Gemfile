@@ -1,0 +1,24 @@
+source 'https://rubygems.org'
+ruby '2.2.1'
+
+gem 'middleman', '~> 3.3.10'
+gem 'middleman-livereload', '~> 3.4.2'
+gem 'middleman-autoprefixer'
+gem 'middleman-minify-html'
+gem 'middleman-syntax'
+gem 'middleman-s3_sync'
+gem 'middleman-search_engine_sitemap'
+
+gem 'slim'
+gem 'therubyracer'
+gem 'oj'
+gem 'redcarpet', '>= 3.2.3'
+gem 'travis'
+gem 'nokogiri'
+gem 'rainbow'
+gem "bootstrap-sass", require: false
+
+platforms :mswin, :mingw do
+  gem 'tzinfo-data'
+  gem 'wdm', '~> 0.1.0'
+end

@@ -1,0 +1,11 @@
+junit_tests(name='scala',
+  dependencies=[
+    '3rdparty/jvm/junit',
+    '3rdparty/jvm/org/scalacheck',
+    '3rdparty/jvm/org/scalatest',
+    'science/src/java/com/twitter/common/metrics:metrics',
+    'finagle/finagle-stats'
+  ],
+  fatal_warnings=True,
+  sources=rglobs('*.scala')
+)

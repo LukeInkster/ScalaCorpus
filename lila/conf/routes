@@ -1,0 +1,447 @@
+# Accessibility
+POST  /toggle-blind-mode               controllers.Main.toggleBlindMode
+
+# Lobby
+GET   /                                controllers.Lobby.home
+GET   /lobby/socket/v:apiVersion       controllers.Lobby.socket(apiVersion: Int)
+GET   /lobby/seeks                     controllers.Lobby.seeks
+
+# Timeline
+GET   /timeline                        controllers.Timeline.home
+POST  /timeline/unsub/:channel         controllers.Timeline.unsub(channel: String)
+
+# Search
+GET   /games/search                    controllers.Search.index(page: Int ?= 1)
+GET   /games/export/search             controllers.Search.export
+
+# Game
+GET   /games/export-form/:user         controllers.Game.export(user: String)
+POST  /games/export/:user              controllers.Game.exportConfirm(user: String)
+
+# TV
+GET   /tv                              controllers.Tv.index
+GET   /tv/embed                        controllers.Tv.embed
+GET   /tv/frame                        controllers.Tv.frame
+GET   /tv/stream/config                controllers.Tv.streamConfig
+POST  /tv/stream/config                controllers.Tv.streamConfigSave
+GET   /tv/stream/:id                   controllers.Tv.streamIn(id: String)
+GET   /tv/feed                         controllers.Tv.feed
+GET   /tv/:chanKey                     controllers.Tv.onChannel(chanKey: String)
+GET   /tv/:chanKey/$gameId<\w{8}>/$color<white|black>/sides controllers.Tv.sides(chanKey: String, gameId: String, color: String)
+GET   /games                           controllers.Tv.games
+GET   /games/:chanKey                  controllers.Tv.gamesChannel(chanKey: String)
+
+# Relation
+POST  /rel/follow/:userId              controllers.Relation.follow(userId: String)
+POST  /rel/unfollow/:userId            controllers.Relation.unfollow(userId: String)
+POST  /rel/block/:userId               controllers.Relation.block(userId: String)
+POST  /rel/unblock/:userId             controllers.Relation.unblock(userId: String)
+GET   /@/:username/following           controllers.Relation.following(username: String, page: Int ?= 1)
+GET   /@/:username/followers           controllers.Relation.followers(username: String, page: Int ?= 1)
+GET   /rel/blocks                      controllers.Relation.blocks(page: Int ?= 1)
+
+# Insight
+POST  /insights/refresh/:username      controllers.Insight.refresh(username: String)
+POST  /insights/data/:username         controllers.Insight.json(username: String)
+GET   /insights/:username              controllers.Insight.index(username: String)
+GET   /insights/:username/:metric/:dimension controllers.Insight.path(username: String, metric: String, dimension: String, filters: String = "")
+GET   /insights/:username/:metric/:dimension/*filters controllers.Insight.path(username: String, metric: String, dimension: String, filters: String)
+
+# User subpages
+GET   /@/:username/tournaments/:path   controllers.UserTournament.path(username: String, path: String, page: Int ?= 1)
+
+# User
+GET   /@/:username/opponents           controllers.User.opponents(username: String)
+GET   /@/:username/mod                 controllers.User.mod(username: String)
+POST  /@/:username/note                controllers.User.writeNote(username: String)
+GET   /@/:username/mini                controllers.User.showMini(username: String)
+GET   /@/:username/tv                  controllers.User.tv(username: String)
+GET   /@/:username/perf/:perfKey       controllers.User.perfStat(username: String, perfKey: String)
+GET   /@/:username/:filterName         controllers.User.showFilter(username: String, filterName: String, page: Int ?= 1)
+GET   /@/:username                     controllers.User.show(username: String)
+GET   /player                          controllers.User.list
+GET   /player/top/200/:perfKey         controllers.User.top200(perfKey: String)
+GET   /player/top/week                 controllers.User.topWeek
+GET   /player/online                   controllers.User.online
+GET   /player/autocomplete             controllers.User.autocomplete
+
+# Account
+GET   /account/passwd                  controllers.Account.passwd
+POST  /account/passwd                  controllers.Account.passwdApply
+GET   /account/email                   controllers.Account.email
+POST  /account/email                   controllers.Account.emailApply
+GET   /account/close                   controllers.Account.close
+POST  /account/closeConfirm            controllers.Account.closeConfirm
+GET   /account/profile                 controllers.Account.profile
+POST  /account/profile                 controllers.Account.profileApply
+GET   /account/kid                     controllers.Account.kid
+POST  /account/kidConfirm              controllers.Account.kidConfirm
+GET   /account/security                controllers.Account.security
+POST  /account/signout/:sessionId      controllers.Account.signout(sessionId: String)
+GET   /account/info                    controllers.Account.info
+
+# Site
+GET   /socket                          controllers.Main.websocket
+
+# Blog
+GET   /blog                            controllers.Blog.index(ref: Option[String] ?= None)
+GET   /blog/:id/:slug                  controllers.Blog.show(id: String, slug: String, ref: Option[String] ?= None)
+GET   /blog.atom                       controllers.Blog.atom(ref: Option[String] ?= None)
+
+# Training - Opening
+GET   /training/opening                controllers.Opening.home
+GET   /training/opening/history        controllers.Opening.history
+GET   /training/opening/:id            controllers.Opening.show(id: Int)
+POST  /training/opening/:id            controllers.Opening.attempt(id: Int)
+
+# Training - Coordinate
+GET   /training/coordinate             controllers.Coordinate.home
+POST  /training/coordinate/score       controllers.Coordinate.score
+POST  /training/coordinate/color       controllers.Coordinate.color
+
+# Training - Puzzle
+GET   /training                        controllers.Puzzle.home
+POST  /training/difficulty             controllers.Puzzle.difficulty
+GET   /training/new                    controllers.Puzzle.newPuzzle
+GET   /training/history                controllers.Puzzle.history
+GET   /training/daily                  controllers.Puzzle.daily
+GET   /training/embed                  controllers.Puzzle.embed
+GET   /training/frame                  controllers.Puzzle.frame
+GET   /training/export/png/:id.png     controllers.Export.puzzlePng(id: Int)
+GET   /training/:id                    controllers.Puzzle.show(id: Int)
+GET   /training/:id/load               controllers.Puzzle.load(id: Int)
+POST  /training/:id/attempt            controllers.Puzzle.attempt(id: Int)
+POST  /training/:id/vote               controllers.Puzzle.vote(id: Int)
+
+# User Analysis
+GET   /analysis/*something             controllers.UserAnalysis.parse(something: String)
+GET   /analysis                        controllers.UserAnalysis.index
+POST  /analysis/pgn                    controllers.UserAnalysis.pgn
+
+# Study
+GET   /study                           controllers.Study.allDefault(page: Int ?= 1)
+GET   /study/all/:order                controllers.Study.all(order: String, page: Int ?= 1)
+GET   /study/mine/:order               controllers.Study.mine(order: String, page: Int ?= 1)
+GET   /study/member/:order             controllers.Study.mineMember(order: String, page: Int ?= 1)
+GET   /study/public/:order             controllers.Study.minePublic(order: String, page: Int ?= 1)
+GET   /study/private/:order            controllers.Study.minePrivate(order: String, page: Int ?= 1)
+GET   /study/likes/:order              controllers.Study.mineLikes(order: String, page: Int ?= 1)
+GET   /study/by/:username              controllers.Study.byOwnerDefault(username: String, page: Int ?= 1)
+GET   /study/by/:username/:order       controllers.Study.byOwner(username: String, order: String, page: Int ?= 1)
+GET   /study/$id<\w{8}>                controllers.Study.show(id: String)
+POST  /study                           controllers.Study.create
+GET   /study/$id<\w{8}>/socket/v:apiVersion controllers.Study.websocket(id: String, apiVersion: Int)
+GET   /study/$id<\w{8}>.pgn            controllers.Study.pgn(id: String)
+POST  /study/$id<\w{8}>/delete         controllers.Study.delete(id: String)
+GET   /study/$id<\w{8}>/$chapterId<\w{8}>        controllers.Study.chapter(id: String, chapterId: String)
+
+# Learn
+GET   /learn                           controllers.Learn.index
+POST  /learn/stage                     controllers.Learn.stage
+
+# Round
+GET   /$gameId<\w{8}>                            controllers.Round.watcher(gameId: String, color: String = "white")
+GET   /$gameId<\w{8}>/$color<white|black>        controllers.Round.watcher(gameId: String, color: String)
+GET   /$fullId<\w{12}>                           controllers.Round.player(fullId: String)
+GET   /$gameId<\w{8}>/$color<white|black>/socket controllers.Round.websocketWatcher(gameId: String, color: String)
+GET   /$fullId<\w{12}>/socket/v:apiVersion       controllers.Round.websocketPlayer(fullId: String, apiVersion: Int)
+GET   /$gameId<\w{8}>/$color<white|black>/sides/watcher controllers.Round.sidesWatcher(gameId: String, color: String)
+GET   /$gameId<\w{8}>/$color<white|black>/sides/player controllers.Round.sidesPlayer(gameId: String, color: String)
+GET   /$gameId<\w{8}>/others                     controllers.Round.others(gameId: String)
+GET   /$gameId<\w{8}>/continue/:mode             controllers.Round.continue(gameId: String, mode: String)
+GET   /$gameId<\w{8}>/note                       controllers.Round.readNote(gameId: String)
+POST  /$gameId<\w{8}>/note                       controllers.Round.writeNote(gameId: String)
+GET   /$gameId<\w{8}>/mini                       controllers.Round.mini(gameId: String, color: String = "white")
+GET   /$gameId<\w{8}>/$color<white|black>/mini   controllers.Round.mini(gameId: String, color: String)
+GET   /$fullId<\w{12}>/mini                      controllers.Round.miniFullId(fullId: String)
+GET   /$gameId<\w{8}>/edit                       controllers.Editor.game(gameId: String)
+GET   /$gameId<\w{8}>/$color<white|black>/analysis controllers.UserAnalysis.game(gameId: String, color: String)
+POST  /$fullId<\w{12}>/forecasts                  controllers.UserAnalysis.forecasts(fullId: String)
+POST  /$fullId<\w{12}>/forecasts/:uci            controllers.UserAnalysis.forecastsOnMyTurn(fullId: String, uci: String)
+POST  /$fullId<\w{12}>/resign                    controllers.Round.resign(fullId: String)
+
+GET   /$gameId<\w{8}>.atom                       controllers.Round.atom(gameId: String, color: String = "white")
+GET   /$gameId<\w{8}>/$color<white|black>.atom   controllers.Round.atom(gameId: String, color: String)
+
+POST  /$gameId<\w{8}>/delete                     controllers.Game.delete(gameId: String)
+
+GET   /round-next/$gameId<\w{8}>                 controllers.Round.next(gameId: String)
+GET   /whats-next/$fullId<\w{12}>                controllers.Round.whatsNext(fullId: String)
+
+# Round accessibility: text representation
+GET   /$fullId<\w{12}>/text                      controllers.Round.playerText(fullId: String)
+GET   /$gameId<\w{8}>/$color<white|black>/text   controllers.Round.watcherText(gameId: String, color: String)
+
+# Tournament
+GET   /tournament                             controllers.Tournament.home(page: Int ?= 1)
+GET   /tournament/new                         controllers.Tournament.form
+POST  /tournament/new                         controllers.Tournament.create
+GET   /tournament/$id<\w{8}>                  controllers.Tournament.show(id: String)
+GET   /tournament/$id<\w{8}>/standing/:page   controllers.Tournament.standing(id: String, page: Int)
+GET   /tournament/$id<\w{8}>/socket/v:apiVersion controllers.Tournament.websocket(id: String, apiVersion: Int)
+GET   /tournament/$id<\w{8}>/game-standing    controllers.Tournament.gameStanding(id: String)
+POST  /tournament/$id<\w{8}>/join             controllers.Tournament.join(id: String)
+POST  /tournament/$id<\w{8}>/withdraw         controllers.Tournament.withdraw(id: String)
+GET   /tournament/$id<\w{8}>/mini/:user/:nb   controllers.Tournament.userGameNbMini(id: String, user: String, nb: Int)
+GET   /tournament/$id<\w{8}>/show/:user/:nb   controllers.Tournament.userGameNbShow(id: String, user: String, nb: Int)
+GET   /tournament/$id<\w{8}>/player/:user     controllers.Tournament.player(id: String, user: String)
+POST  /tournament/$id<\w{8}>/terminate        controllers.Tournament.terminate(id: String)
+GET   /tournament/help                        controllers.Tournament.help(system: Option[String] ?= None)
+GET   /tournament/limited-invitation          controllers.Tournament.limitedInvitation
+
+# Tournament CRUD
+GET   /tournament/manager                     controllers.TournamentCrud.index
+GET   /tournament/manager/$id<\w{8}>          controllers.TournamentCrud.edit(id: String)
+POST  /tournament/manager/$id<\w{8}>          controllers.TournamentCrud.update(id: String)
+GET   /tournament/manager/new                 controllers.TournamentCrud.form
+POST  /tournament/manager                     controllers.TournamentCrud.create
+
+# Simul
+GET   /simul                                  controllers.Simul.home
+GET   /simul/new                              controllers.Simul.form
+POST  /simul/new                              controllers.Simul.create
+GET   /simul/reload                           controllers.Simul.homeReload
+GET   /simul/$id<\w{8}>                       controllers.Simul.show(id: String)
+GET   /simul/$id<\w{8}>/socket/v:apiVersion   controllers.Simul.websocket(id: String, apiVersion: Int)
+POST  /simul/$id<\w{8}>/accept/:user          controllers.Simul.accept(id: String, user: String)
+POST  /simul/$id<\w{8}>/reject/:user          controllers.Simul.reject(id: String, user: String)
+POST  /simul/$id<\w{8}>/start                 controllers.Simul.start(id: String)
+POST  /simul/$id<\w{8}>/abort                 controllers.Simul.abort(id: String)
+POST  /simul/$id<\w{8}>/join/:variant         controllers.Simul.join(id: String, variant: String)
+POST  /simul/$id<\w{8}>/withdraw              controllers.Simul.withdraw(id: String)
+
+# Team
+GET   /team                                   controllers.Team.home(page: Int ?= 1)
+GET   /team/new                               controllers.Team.form
+POST  /team/new                               controllers.Team.create
+GET   /team/me                                controllers.Team.mine
+GET   /team/all                               controllers.Team.all(page: Int ?= 1)
+GET   /team/requests                          controllers.Team.requests
+GET   /team/search                            controllers.Team.search(text: String ?= "", page: Int ?= 1)
+GET   /team/:id                               controllers.Team.show(id: String, page: Int ?= 1)
+GET   /team/:id/join                          controllers.Team.joinPage(id: String)
+POST  /team/:id/join                          controllers.Team.join(id: String)
+POST  /team/:id/quit                          controllers.Team.quit(id: String)
+GET   /team/:id/request/new                   controllers.Team.requestForm(id: String)
+POST  /team/:id/request/new                   controllers.Team.requestCreate(id: String)
+POST  /team/:id/request/process               controllers.Team.requestProcess(id: String)
+GET   /team/:id/edit                          controllers.Team.edit(id: String)
+POST  /team/:id/edit                          controllers.Team.update(id: String)
+GET   /team/:id/kick                          controllers.Team.kickForm(id: String)
+POST  /team/:id/kick                          controllers.Team.kick(id: String)
+POST  /team/:id/close                         controllers.Team.close(id: String)
+
+# Analyse
+POST  /$gameId<\w{8}>/request-analysis        controllers.Analyse.requestAnalysis(gameId: String)
+
+GET   /game/export/$gameId<\w{8}>.pgn         controllers.Export.pgn(gameId: String)
+GET   /game/export/pdf/$gameId<\w{8}>.pdf     controllers.Export.pdf(gameId: String)
+GET   /game/export/png/$gameId<\w{8}>.png     controllers.Export.png(gameId: String)
+
+# Fishnet
+POST  /fishnet/acquire                        controllers.Fishnet.acquire
+POST  /fishnet/move/$workId<\w{8}>            controllers.Fishnet.move(workId: String)
+POST  /fishnet/analysis/$workId<\w{8}>        controllers.Fishnet.analysis(workId: String)
+POST  /fishnet/abort/$workId<\w{8}>           controllers.Fishnet.abort(workId: String)
+GET   /fishnet/key/$key<\w{8}>                controllers.Fishnet.keyExists(key: String)
+
+# Pref
+POST  /pref/:name                      controllers.Pref.set(name: String)
+GET   /account/preferences/:categ      controllers.Pref.form(categ: String)
+POST  /account/preferences             controllers.Pref.formApply
+POST  /account/preferences/tag/:name/:value controllers.Pref.saveTag(name: String, value: String)
+
+# Setup
+GET   /setup/ai                        controllers.Setup.aiForm
+POST  /setup/ai                        controllers.Setup.ai
+GET   /setup/friend                    controllers.Setup.friendForm(user: Option[String] ?= None)
+POST  /setup/friend                    controllers.Setup.friend(user: Option[String] ?= None)
+GET   /setup/hook                      controllers.Setup.hookForm
+POST  /setup/hook/:uid/like/:gameId    controllers.Setup.like(uid: String, gameId: String)
+POST  /setup/hook/:uid                 controllers.Setup.hook(uid: String)
+GET   /setup/filter                    controllers.Setup.filterForm
+POST  /setup/filter                    controllers.Setup.filter
+GET   /setup/validate-fen              controllers.Setup.validateFen
+
+# Challenge
+GET   /challenge                       controllers.Challenge.all
+GET   /challenge/$id<\w{8}>            controllers.Challenge.show(id: String)
+POST  /challenge/$id<\w{8}>/accept     controllers.Challenge.accept(id: String)
+POST  /challenge/$id<\w{8}>/decline    controllers.Challenge.decline(id: String)
+POST  /challenge/$id<\w{8}>/cancel     controllers.Challenge.cancel(id: String)
+GET   /challenge/$id<\w{8}>/socket/v:apiVersion controllers.Challenge.websocket(id: String, apiVersion: Int)
+POST  /challenge/rematch-of/$id<\w{8}> controllers.Challenge.rematchOf(id: String)
+
+# Notify
+GET /notify                            controllers.Notify.recent(page: Int ?= 1)
+
+# Video
+GET   /video                           controllers.Video.index
+GET   /video/tags                      controllers.Video.tags
+GET   /video/author/:author            controllers.Video.author(author: String)
+GET   /video/:id                       controllers.Video.show(id: String)
+
+# I18n
+GET   /translation/contribute          controllers.I18n.contribute
+GET   /translation/form/:lang          controllers.I18n.translationForm(lang: String)
+POST  /translation/post/:lang          controllers.I18n.translationPost(lang: String)
+GET   /translation/fetch/:from         controllers.I18n.fetch(from: Int)
+POST  /translation/hideCalls           controllers.I18n.hideCalls
+POST  /translation/select              controllers.I18n.select
+
+# Authentication
+GET   /login                           controllers.Auth.login
+POST  /login                           controllers.Auth.authenticate
+GET   /logout                          controllers.Auth.logout
+GET   /signup                          controllers.Auth.signup
+POST  /signup                          controllers.Auth.signupPost
+GET   /signup/check-your-email/:name   controllers.Auth.checkYourEmail(name: String)
+GET   /signup/confirm/:token           controllers.Auth.signupConfirmEmail(token: String)
+GET   /password/reset                  controllers.Auth.passwordReset
+POST  /password/reset/send             controllers.Auth.passwordResetApply
+GET   /password/reset/sent/:email      controllers.Auth.passwordResetSent(email: String)
+GET   /password/reset/confirm/:token   controllers.Auth.passwordResetConfirm(token: String)
+POST  /password/reset/confirm/:token   controllers.Auth.passwordResetConfirmApply(token: String)
+POST  /set-fingerprint/:hash/:ms       controllers.Auth.setFingerprint(hash: String, ms: Int)
+
+# Mod
+POST  /mod/:username/engine            controllers.Mod.engine(username: String)
+POST  /mod/:username/booster           controllers.Mod.booster(username: String)
+POST  /mod/:username/troll             controllers.Mod.troll(username: String)
+POST  /mod/:username/ban               controllers.Mod.ban(username: String)
+POST  /mod/:username/close             controllers.Mod.closeAccount(username: String)
+POST  /mod/:username/reopen            controllers.Mod.reopenAccount(username: String)
+POST  /mod/:username/title             controllers.Mod.setTitle(username: String)
+GET   /mod/:username/communication     controllers.Mod.communication(username: String)
+POST  /mod/:ip/ipban                   controllers.Mod.ipban(ip: String)
+GET   /mod/log                         controllers.Mod.log
+POST  /mod/:username/refreshUserAssess controllers.Mod.refreshUserAssess(username: String)
+POST  /mod/:username/email             controllers.Mod.setEmail(username: String)
+POST  /mod/:username/notify-slack      controllers.Mod.notifySlack(username: String)
+GET   /mod/ip-intel                    controllers.Mod.ipIntel(ip: String)
+GET   /mod/leaderboard                 controllers.Mod.gamify
+GET   /mod/leaderboard/:period         controllers.Mod.gamifyPeriod(period: String)
+GET   /mod/search                      controllers.Mod.search
+GET   /mod/chat-user/:username         controllers.Mod.chatUser(username: String)
+GET   /mod/:username/powaaa            controllers.Mod.powaaa(username: String)
+POST  /mod/:username/powaaa            controllers.Mod.savePowaaa(username: String)
+
+# Bookmark
+POST  /bookmark/$gameId<\w{8}>     controllers.Bookmark.toggle(gameId: String)
+
+# Forum
+GET   /forum                           controllers.ForumCateg.index
+GET   /forum/recent                    controllers.ForumPost.recent
+GET   /forum/search                    controllers.ForumPost.search(text: String ?= "", page: Int ?= 1)
+GET   /forum/:slug                     controllers.ForumCateg.show(slug: String, page: Int ?= 1)
+GET   /forum/:categSlug/form           controllers.ForumTopic.form(categSlug: String)
+POST  /forum/:categSlug/new            controllers.ForumTopic.create(categSlug: String)
+GET   /forum/:categSlug/:slug          controllers.ForumTopic.show(categSlug: String, slug: String, page: Int ?= 1)
+POST  /forum/:categSlug/:slug/close    controllers.ForumTopic.close(categSlug: String, slug: String)
+POST  /forum/:categSlug/:slug/hide     controllers.ForumTopic.hide(categSlug: String, slug: String)
+POST  /forum/:categSlug/:slug/new      controllers.ForumPost.create(categSlug: String, slug: String, page: Int ?= 1)
+POST  /forum/:categSlug/delete/:id     controllers.ForumPost.delete(categSlug: String, id: String)
+GET   /forum/redirect/post/:id         controllers.ForumPost.redirect(id: String)
+
+# Message
+GET   /inbox                           controllers.Message.inbox(page: Int ?= 1)
+GET   /inbox/new                       controllers.Message.form
+POST  /inbox/new                       controllers.Message.create
+GET   /inbox/$id<\w{8}>              controllers.Message.thread(id: String)
+POST  /inbox/$id<\w{8}>              controllers.Message.answer(id: String)
+POST  /inbox/$id<\w{8}>/delete       controllers.Message.delete(id: String)
+POST  /inbox/$id<\w{8}>/read         controllers.Message.markAsRead(id: String)
+
+# Paste
+GET   /paste                           controllers.Importer.importGame
+POST  /import                          controllers.Importer.sendGame
+GET   /import/master/$id<\w{8}>/:color controllers.Importer.masterGame(id: String, color: String)
+
+# Edit
+GET   /editor.json                     controllers.Editor.data
+GET   /editor/*urlFen                  controllers.Editor.load(urlFen: String)
+GET   /editor                          controllers.Editor.index
+
+# Report
+GET   /report                          controllers.Report.form
+POST  /report                          controllers.Report.create
+GET   /report/thanks                   controllers.Report.thanks(reported: String)
+GET   /report/list                     controllers.Report.list
+POST  /report/:id/process              controllers.Report.process(id: String)
+
+# QA
+GET    /qa                         controllers.QaQuestion.index(page: Option[Int] ?= None)
+GET    /qa/search                  controllers.QaQuestion.search
+GET    /qa/ask                     controllers.QaQuestion.ask
+POST   /qa/ask                     controllers.QaQuestion.doAsk
+GET    /qa/tag/:slug               controllers.QaQuestion.byTag(slug: String)
+GET    /qa/:id/:slug               controllers.QaQuestion.show(id: Int, slug: String)
+GET    /qa/:id/:slug/edit          controllers.QaQuestion.edit(id: Int, slug: String)
+POST   /qa/:id/edit                controllers.QaQuestion.doEdit(id: Int)
+POST   /qa/:id/vote                controllers.QaQuestion.vote(id: Int)
+POST   /qa/:id/rm                  controllers.QaQuestion.remove(id: Int)
+POST   /qa/:id/answer              controllers.QaAnswer.create(id: Int)
+POST   /qa/:id/:a/vote             controllers.QaAnswer.vote(id: Int, a: Int)
+POST   /qa/:id/:a/accept           controllers.QaAnswer.accept(id: Int, a: Int)
+POST   /qa/:id/:a/edit-answer      controllers.QaAnswer.doEdit(id: Int, a: Int)
+POST   /qa/:id/:a/rm-answer        controllers.QaAnswer.remove(id: Int, a: Int)
+POST   /qa/:id/:a/move             controllers.QaAnswer.moveTo(id: Int, a: Int)
+POST   /qa/:id/comment             controllers.QaComment.question(id: Int)
+POST   /qa/:id/:a/comment          controllers.QaComment.answer(id: Int, a: Int)
+POST   /qa/:id/:c/rm-comment       controllers.QaComment.remove(id: Int, c: String)
+
+# Stats
+GET    /stat/rating/distribution/:perf controllers.Stat.ratingDistribution(perf: String)
+
+# API
+GET   /api/user                        controllers.Api.users
+GET   /api/user/:name                  controllers.Api.user(name: String)
+GET   /api/user/:name/games            controllers.Api.userGames(name: String)
+GET   /api/game/:id                    controllers.Api.game(id: String)
+GET   /api/status                      controllers.Api.status
+
+# Misc
+POST  /cli                             controllers.Cli.command
+GET   /captcha/$id<\w{8}>              controllers.Main.captchaCheck(id: String)
+GET   /developers                      controllers.Main.developers
+GET   /embed                           controllers.Main.embed
+GET   /themepicker                     controllers.Main.themepicker
+GET   /mobile                          controllers.Main.mobile
+GET   /lag                             controllers.Main.lag
+
+# Map
+GET   /network                         controllers.WorldMap.index
+GET   /network/stream                  controllers.WorldMap.stream
+
+# Mobile Push
+POST  /mobile/register/:platform/:deviceId controllers.Main.mobileRegister(platform: String, deviceId: String)
+POST  /mobile/unregister               controllers.Main.mobileUnregister
+
+# Donate
+GET   /donate                          controllers.Donation.index
+GET   /donate/thanks                   controllers.Donation.thanks
+POST  /donate/thanks                   controllers.Donation.thanksRedirect
+POST  /donate/ipn                      controllers.Donation.ipn
+
+# Pages
+GET   /thanks                          controllers.Page.thanks
+GET   /terms-of-service                controllers.Page.tos
+GET   /privacy                         controllers.Page.privacy
+GET   /contact                         controllers.Page.contact
+GET   /swag                            controllers.Page.swag
+GET   /about                           controllers.Page.about
+
+# Variants
+GET   /variant                         controllers.Page.variantHome
+GET   /variant/:key                    controllers.Page.variant(key)
+
+# Help
+GET   /help/contribute                 controllers.Page.contribute
+GET   /help/master                     controllers.Page.master
+GET   /help/stream-on-lichess          controllers.Page.streamHowTo
+
+POST  /jslog/$id<\w{12}>               controllers.Main.jslog(id)
+
+# Assets
+GET   /glyphs                          controllers.Main.glyphs
+GET   /assets/*file                    controllers.Assets.at(path="/public", file)

@@ -1,0 +1,91 @@
+---
+title: Installing PredictionIO from Source Code
+---
+
+INFO: Assuming you are following the directory structure in the followoing,
+replace `/home/abc` with your own home directory wherever you see it.
+
+## Building
+
+Run the following to download and build PredictionIO from its source code.
+
+```
+$ git clone https://github.com/PredictionIO/PredictionIO.git
+$ cd PredictionIO
+$ git checkout master
+$ ./make-distribution.sh
+```
+
+You should see something like the following when it finishes building
+successfully.
+
+```
+...
+PredictionIO-<%= data.versions.pio %>/sbt/sbt
+PredictionIO-<%= data.versions.pio %>/conf/
+PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh
+PredictionIO binary distribution created at PredictionIO-<%= data.versions.pio %>.tar.gz
+```
+
+Extract the binary distribution you have just built.
+
+```
+$ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
+```
+
+
+## Installing Dependencies
+
+Let us install dependencies inside a subdirectory of the PredictionIO
+installation. By following this convention, you can use PredictionIO's default
+configuration as is.
+
+```
+$ mkdir PredictionIO-<%= data.versions.pio %>/vendors
+```
+
+
+### Spark Setup
+
+<%= partial 'shared/install/spark' %>
+
+
+### Storage Setup
+
+#### PostgreSQL Setup 
+
+<%=partial 'shared/install/postgres' %>
+
+#### HBase and Elasticsearch Setup
+
+##### Elasticsearch Setup
+
+WARNING: You may skip this section if you are using PostgreSQL or MySQL.
+
+<%= partial 'shared/install/elasticsearch' %>
+
+
+##### <a name="hbase"></a>HBase Setup
+
+WARNING: You may skip this section if you are using PostgreSQL or MySQL.
+
+<%= partial 'shared/install/hbase' %>
+
+
+In addition, you must set your environment variable `JAVA_HOME`. For example, in
+`/home/abc/.bashrc` add the following line:
+
+```
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+```
+
+
+<%= partial 'shared/install/dependent_services' %>
+
+
+
+
+
+Now you have installed everything you need!
+
+<%= partial 'shared/install/proceed_template' %>

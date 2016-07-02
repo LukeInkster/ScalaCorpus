@@ -1,0 +1,18 @@
+junit_tests(name='scala',
+  dependencies=[
+    '3rdparty/jvm/io/netty',
+    '3rdparty/jvm/junit',
+    '3rdparty/jvm/mysql:mysql-connector-mxj-gpl',
+    '3rdparty/jvm/mysql:mysql-connector-mxj-gpl-db-files',
+    '3rdparty/jvm/mysql:mysql-connector-java',
+    '3rdparty/jvm/org/mockito:mockito-all',
+    '3rdparty/jvm/org/scalatest',
+    'finagle/finagle-mysql',
+    'util/util-core',
+  ],
+  fatal_warnings=True,
+  sources=rglobs('*.scala'),
+  resources=[
+    'finagle/finagle-mysql/src/test/resources'
+  ]
+)

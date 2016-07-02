@@ -1,0 +1,20 @@
+junit_tests(name='scala',
+  dependencies=[
+    '3rdparty/jvm/com/fasterxml/jackson/core:jackson-annotations',
+    '3rdparty/jvm/junit',
+    '3rdparty/jvm/org/scalacheck',
+    '3rdparty/jvm/org/scalatest',
+    'finagle/finagle-toggle',
+    'util/util-app/src/main/java',
+    'util/util-app/src/main/scala',
+    'util/util-core',
+    'util/util-logging',
+    'util/util-stats',
+  ],
+  resources=[
+    'finagle/finagle-toggle/src/test/resources'
+  ],
+  sources=rglobs('*.scala'),
+  fatal_warnings=True,
+  strict_deps=True,
+)

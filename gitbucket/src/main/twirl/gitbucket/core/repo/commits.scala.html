@@ -1,0 +1,91 @@
+@(pathList: List[String],
+  branch: String,
+  repository: gitbucket.core.service.RepositoryService.RepositoryInfo,
+  commits: Seq[Seq[gitbucket.core.util.JGitUtil.CommitInfo]],
+  page: Int,
+  hasNext: Boolean,
+  hasWritePermission: Boolean)(implicit context: gitbucket.core.controller.Context)
+@import context._
+@import gitbucket.core.view.helpers._
+@html.main(s"${repository.owner}/${repository.name}", Some(repository)) {
+  @html.menu("files", repository){
+    <div class="head">
+      @if(pathList.isEmpty){
+        @helper.html.branchcontrol(
+          branch,
+          repository,
+          hasWritePermission
+        ){
+          @repository.branchList.map { x =>
+            <li><a href="@url(repository)/commits/@encodeRefName(x)">@helper.html.checkicon(x == branch) @x</a></li>
+          }
+        }
+      }
+      @if(pathList.nonEmpty){
+        <span class="muted">History for</span>
+        <a class="strong" href="@url(repository)/tree/@encodeRefName(branch)">@repository.name</a> /
+        @pathList.zipWithIndex.map { case (section, i) =>
+          @if(i == pathList.length - 1){
+            <span class="strong">@section</span>
+          } else {
+            <a class="strong" href="@url(repository)/tree/@encodeRefName(branch)/@pathList.take(i + 1).mkString("/")">@section</a> /
+          }
+        }
+      }
+    </div>
+
+    <table class="table table-bordered">
+    @commits.map { day =>
+      <tr>
+        <th rowspan="@day.size" width="100">@date(day.head.commitTime)</th>
+        @day.zipWithIndex.map { case (commit, i) =>
+          @if(i != 0){ <tr> }
+          <td>
+            <div class="pull-right text-right">
+              <a href="@url(repository)/commit/@commit.id" class="monospace commit-message strong"><i class="octicon octicon-diff" style="color: black;"></i>@commit.id.substring(0, 7)</a><br>
+              <a href="@url(repository)/tree/@commit.id" class="button-link">Browse files »</a>
+            </div>
+            <div>
+              <div class="commit-avatar-image">@avatarLink(commit, 40)</div>
+              <div>
+                @link(commit.summary, repository)
+                @if(commit.description.isDefined){
+                  <a href="javascript:void(0)" onclick="$('#description-@commit.id').toggle();" class="omit">...</a>
+                }
+                <br>
+                @if(commit.description.isDefined){
+                  <pre id="description-@commit.id" style="display: none;" class="commit-description">@link(commit.description.get, repository)</pre>
+                }
+                  <div>
+                  @if(commit.isDifferentFromAuthor) {
+                    @user(commit.authorName, commit.authorEmailAddress, "username")
+                    <span class="muted">authored @helper.html.datetimeago(commit.authorTime)</span>
+                    <span class="octicon octicon-arrow-right" style="margin-top : -2px;"></span>
+                  }
+                  @user(commit.committerName, commit.committerEmailAddress, "username")
+                  <span class="muted">committed @helper.html.datetimeago(commit.commitTime)</span>
+                </div>
+              </div>
+            </div>
+          </td>
+          </tr>
+        }
+    }
+    </table>
+
+    <nav style="text-align: center; margin-top: 20px">
+      <ul class="pagination">
+        @if(page <= 1){
+          <li class="disabled"><span>Newer</span></li>
+        } else {
+          <li><a href="?page=@{page - 1}">Newer</a></li>
+        }
+        @if(!hasNext){
+          <li class="disabled"><span>Older</span></li>
+        } else {
+          <li><a href="?page=@{page + 1}">Older</a></li>
+        }
+      </ul>
+    </nav>
+  }
+}

@@ -1,0 +1,10 @@
+junit_tests(name='java',
+  dependencies=[
+    '3rdparty/jvm/junit',
+    'finagle/finagle-core',
+    'finagle/finagle-thriftmux',
+    'finagle/finagle-thriftmux/src/test/thrift:thrift-scala',
+    'util/util-core',
+  ],
+  sources=rglobs('*.java')
+)

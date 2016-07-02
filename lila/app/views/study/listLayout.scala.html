@@ -1,0 +1,37 @@
+@(title: String, active: String, order: lila.study.Order, pag: Paginator[lila.study.Study.WithChaptersAndLiked], url: controllers.Study.ListUrl)(titleHtml: Html)(implicit ctx: Context)
+
+@moreCss = {
+@cssTag("studyList.css")
+}
+
+@moreJs = {
+@jsTag("vendor/jquery.infinitescroll.min.js")
+}
+
+@menu = {
+<a class="@active.active("all")" href="@routes.Study.all(order.key)">All studies</a>
+@if(ctx.isAuth) {
+<a class="@active.active("mine")" href="@routes.Study.mine(order.key)">My studies</a>
+<a class="@active.active("mineMember")" href="@routes.Study.mineMember(order.key)">Studies I contribute to</a>
+<a class="@active.active("minePublic")" href="@routes.Study.minePublic(order.key)">My public studies</a>
+<a class="@active.active("minePrivate")" href="@routes.Study.minePrivate(order.key)">My private studies</a>
+<a class="@active.active("mineLikes")" href="@routes.Study.mineLikes(order.key)">Favourite studies</a>
+}
+<a class="text" data-icon="" href="//lichess.org/blog/V0KrLSkAAMo3hsi4/study-chess-the-lichess-way">What are studies?</a>
+}
+
+@base.layout(
+title = title,
+menu = menu.some,
+moreCss = moreCss,
+moreJs = moreJs,
+withLangAnnotations = false) {
+<div class="content_box no_padding studies">
+  <div class="top">
+    <h1>@titleHtml</h1>
+    @orderChoice(o => url(o.key), order, if (active == "all") lila.study.Order.allButOldest else lila.study.Order.all)
+    @newForm()
+  </div>
+  @list(pag, url(order.key))
+</div>
+}

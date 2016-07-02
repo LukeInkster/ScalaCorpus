@@ -1,0 +1,18 @@
+junit_tests(name='scala',
+  dependencies=[
+    '3rdparty/jvm/junit',
+    '3rdparty/jvm/io/netty',
+    '3rdparty/jvm/org/scalatest',
+    '3rdparty/jvm/org/apache/thrift:thrift-0.5.0',
+    'finagle/finagle-core',
+    'finagle/finagle-thrift',
+    'finagle/finagle-thriftmux',
+    'finagle/finagle-thriftmux/src/test/thrift:thrift-java',
+    'finagle/finagle-thriftmux/src/test/thrift:thrift-scala',
+    'util/util-core',
+  ],
+  sources=rglobs('*.scala'),
+  resources=[
+    'finagle/finagle-thriftmux/src/test/resources'
+  ]
+)

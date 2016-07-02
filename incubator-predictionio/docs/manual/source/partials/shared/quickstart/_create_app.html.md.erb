@@ -1,0 +1,37 @@
+You will need to create a new App in PredictionIO to store all the data of your app. The data collected will be used for machine learning modeling.
+
+Let's assume you want to use this engine in an application named "MyApp1".  Run the following to create a new app "MyApp1":
+
+```
+$ pio app new MyApp1
+```
+
+You should find the following in the console output:
+
+```
+...
+[INFO] [App$] Initialized Event Store for this app ID: 1.
+[INFO] [App$] Created new app:
+[INFO] [App$]       Name: MyApp1
+[INFO] [App$]         ID: 1
+[INFO] [App$] Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+Note that *App ID**, **Access Key** are created for this App "MyApp1". You will need the **Access Key** when you collect data with EventServer for this App.
+
+You can list all of the apps created its corresponding ID and Access Key by running the following command:
+
+```
+$ pio app list
+```
+
+You should see a list of apps created. For example:
+
+```
+[INFO] [App$]                 Name |   ID |                                                       Access Key | Allowed Event(s)
+[INFO] [App$]               MyApp1 |    1 | 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F | (all)
+[INFO] [App$]               MyApp2 |    2 | io5lz6Eg4m3Xe4JZTBFE13GMAf1dhFl6ZteuJfrO84XpdOz9wRCrDU44EUaYuXq5 | (all)
+[INFO] [App$] Finished listing 2 app(s).
+```
+<!-- dummy markdown link needed if code block is last -->
+[]()

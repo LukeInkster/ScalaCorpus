@@ -1,0 +1,289 @@
+body {
+  font-family: "Source Sans Pro","Helvetica Neue",sans-serif;
+  font-weight: 400;
+  background-image: radial-gradient(54% 23%, #161963 0%, #090B34 97%);
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #FFFFFF;
+  min-height: 100vh;
+}
+
+.metric-header {
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.router-header-large, .metric-large {
+  font-size: 21px;
+  line-height: 21px;
+}
+
+.metric-header {
+  font-weight: 300;
+}
+
+.metric-small {
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.success-metric-container {
+  border-left: 1px solid #4AD8AC;
+}
+
+.failure-metric-container {
+  border-left: 1px solid #D84A4A;
+}
+
+.success-metric {
+  color: #4AD8AC;
+}
+
+.failure-metric {
+  color: #D84A4A;
+}
+
+/*
+* Success rates
+*/
+.sr-good {
+  color: #4AD8AC;
+}
+
+.sr-poor {
+  color: #F28E1D;
+}
+
+.sr-bad {
+  color: #D84A4A;
+}
+
+.sr-undefined {
+  color: #FFFFFF;
+}
+
+/*
+* Navbar styles
+*/
+.navbar {
+  margin-bottom: 0;
+}
+
+nav {
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.1;
+}
+
+.navbar-container {
+  padding: 20px 27px 9px 27px;
+}
+
+.nav {
+  margin-top: -11px;
+}
+
+.navbar-brand-img img {
+  height: 26px;
+}
+
+nav ul.navbar-nav {
+  margin-left: 10px;
+}
+
+.navbar-right {
+  margin-top: 3px;
+}
+
+.navbar-right .dropdown {
+  margin-right: 30px;
+  margin-top: -14px;
+}
+
+.col-md-2 {
+  width: 198px;
+  padding: 0 27px 0 0;
+}
+
+.col-md-4 {
+  width: 396px;
+  padding: 0 27px 0 0;
+}
+
+.col-md-6 {
+  width: 594px;
+  padding: 0 27px 0 0;
+}
+
+.row {
+  margin: 0;
+}
+
+.container-fluid {
+  padding: 0;
+}
+
+.modal-content {
+  border-color: #fff;
+  background-color: #999;
+}
+
+/* request totals */
+
+.request-totals {
+  min-height: 72px;
+  padding: 15px 27px;
+  background: #163F79; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(left top, #163F79, #4076C4);
+  background: -o-linear-gradient(bottom right, #163F79, #4076C4);
+  background: -moz-linear-gradient(bottom right, #163F79, #4076C4);
+  background: linear-gradient(to bottom right, #163F79, #4076C4);
+}
+
+.request-total {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+/* dtab specific css overrides*/
+
+.panel {
+  background-color: transparent;
+}
+
+.panel-heading, .panel>.list-group:last-child .list-group-item:last-child {
+  border-radius: 0;
+}
+
+.dentry .dentry-part:hover {
+  background-color: #222;
+}
+
+/*
+* Router container
+*/
+
+.dashboard-container {
+  margin: 0 27px 0;
+  border-bottom: 2px solid grey;
+}
+
+.proc-info {
+  color: #E1E8ED;
+  font-size: 13px;
+  line-height: 16px;
+  margin: 10px 27px 0;
+}
+
+.router:not(:last-child) {
+  border-bottom: 7px solid #163F79;
+}
+
+/*
+* Router summary
+*/
+
+.router-summary-stat {
+  text-align: right;
+}
+
+.router .summary {
+  margin: 9px 0 20px 0;
+}
+
+.router-graph-header {
+  color: #878787;
+  font-size: 14px;
+  line-height: 15px;
+  height: 15px;
+  margin-top: 18px;
+  margin-bottom: 9px;
+}
+
+.router-server .router-graph-header {
+  margin-top: 0px;
+}
+
+/**
+* Router servers
+*/
+
+.router-servers {
+  padding-bottom: 30px;
+}
+
+.server-metric-container, .server-success-chart {
+  margin-top: 20px; /* to match metric-container */
+}
+
+/**
+* Router clients
+*/
+
+.router-subsection-title {
+  color: #F2F2F2;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.client-container {
+  margin-bottom: 10px;
+}
+
+.client-container .router-header-large {
+  padding: 8px 0;
+}
+
+.router-latencies-container {
+  padding-top: 18px;
+}
+
+.router-latencies > div {
+  font-size: 12px;
+  line-height: 32px;
+  font-weight: 300;
+}
+
+.router-latencies > div:not(:last-child) {
+  border-bottom: 1px solid gray;
+}
+
+.latency-legend {
+  border-radius: 2px;
+  height: 12px;
+  margin-right: 5px;
+}
+
+.metrics-container {
+  padding: 0;
+}
+
+.metric-container {
+  padding-left: 15px;
+  margin: 20px 0 30px 0;
+}
+
+/*
+* For wider screens
+*/
+
+@media (min-width: 1400px) {
+  .navbar-container {
+    width: 100vw;
+  }
+
+  .dashboard-container {
+    margin: 0 1.5vw 0;
+    min-width: 96vw;
+  }
+
+  .row.proc-info, .router, .clients .router-graph {
+    min-width: 96vw;
+  }
+
+  .router > div {
+    width: 100%;
+  }
+}

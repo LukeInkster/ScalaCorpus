@@ -1,0 +1,495 @@
+---
+title: Quick Start - Similar Product Engine Template
+---
+
+## Overview
+
+This engine template recommends products that are "similar" to the input product(s).
+Similarity is not defined by user or item attributes but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B. The template can be customized to support other action types such as buy, rate, like..etc.
+
+This template is ideal for recommending products to customers based on their recent actions.
+Using the IDs of the recently viewed products of a customer as the *Query*,
+the engine will predict other products that this customer may also like.
+
+This approach works perfectly for customers who are **first-time visitors** or have not signed in.
+Recommendations are made dynamically in *real-time* based on the most recent product preference you provide in the *Query*.
+You can, therefore, recommend products to visitors without knowing a long history about them.
+
+You can also use this template to build the popular feature of Amazon: **"Customers Who Viewed This Item Also Viewed..."** quickly.
+Help your customers explore more products that they like, and sell more products.
+
+## Usage
+
+### Event Data Requirements
+
+By default, this template takes the following data from Event Server as Training Data:
+
+- User *$set* events
+- Item *$set* events with *categories* properties
+- Users' *view* item events
+
+INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
+You can offer features like "Customers Who Bought This Item Also Bought....".
+
+### Input Query
+
+- List of ItemIDs, which are the targeted products
+- N (number of items to be recommended)
+- List of white-listed item categories (optional)
+- List of white-listed ItemIds (optional)
+- List of black-listed ItemIds (optional)
+
+The template also supports black-list and white-list. If a white-list is provided, the engine will include only those products in the recommendation.
+Likewise, if a black-list is provided, the engine will exclude those products in the recommendation.
+
+### Output PredictedResult
+
+- a ranked list of recommended itemIDs
+
+## 1. Install and Run PredictionIO
+
+<%= partial 'shared/quickstart/install' %>
+
+## 2. Create a new Engine from an Engine Template
+
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MySimilarProduct', template_name: 'Similar Product Engine Template', template_repo: 'template-scala-parallel-similarproduct' } %>
+
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4. Collecting Data
+
+Next, let's collect some training data for the app of this Engine. By default,
+the Similar Product Engine Template supports 2 types of entities: **user** and
+**item**, and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item. Respectively, this template requires '$set' user event, '$set' item event, and user-view-item events.
+
+INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
+
+<%= partial 'shared/quickstart/collect_data' %>
+
+For example, when a new user with id "u0" is created in your app on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a `$set` event for this user. To send this event, run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+from datetime import datetime
+
+client = predictionio.EventClient(
+  access_key=<ACCESS KEY>,
+  url=<URL OF EVENTSERVER>,
+  threads=5,
+  qsize=500
+)
+
+# Create a new user
+
+client.create_event(
+  event="$set",
+  entity_type="user",
+  entity_id=<USER_ID>,
+  # current time will be used if event_time is not specified
+  event_time=datetime(
+    2014, 11, 02, 09, 39, 45, 618000, pytz.timezone('US/Pacific')
+)
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Create a new user
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'user',
+  'entityId' => <USER ID>
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# Create a new user
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+import com.google.common.collect.ImmutableList;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Create a new user
+Event userEvent = new Event()
+  .event("$set")
+  .entityType("user")
+  .entityId(<USER_ID>);
+client.createEvent(userEvent);
+```
+  </div>
+</div>
+
+When a new item "i0" is created in your app on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a `$set` event for the item. Note that the item is set with categories properties: `"c1"` and `"c2"`. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "item"
+  "entityId" : "i0",
+  "properties" : {
+    "categories" : ["c1", "c2"]
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# Create a new item or set existing item's categories
+
+client.create_event(
+  event="$set",
+  entity_type="item",
+  entity_id=item_id,
+  properties={
+    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
+  }
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+
+```php
+<?php
+
+// Create a new item or set existing item's categories
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'item',
+  'entityId' => <ITEM ID>
+  'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
+));
+
+?>
+```
+  </div>
+
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a new item or set existing item's categories
+client.create_event(
+  '$set',
+  'item',
+  <ITEM ID>, {
+    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
+  }
+)
+
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+// Create a new item or set existing item's categories
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("item")
+  .entityId(<ITEM_ID>)
+  .property("categories", ImmutableList.of("<CATEGORY_1>", "<CATEGORY_2>"));
+client.createEvent(itemEvent)
+```
+  </div>
+
+</div>
+
+When the user "u0" view item "i0" on time `2014-11-10T12:34:56.123-08:00` (current time will be used if eventTime is not specified), you can send a view event. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "view",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "eventTime" : "2014-11-10T12:34:56.123-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# A user views an item
+
+client.create_event(
+  event="view",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+
+```php
+<?php
+// A user views an item
+$client->createEvent(array(
+   'event' => 'view',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# A user views an item.
+client.create_event(
+  'view',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+// A user views an item
+Event viewEvent = new Event()
+    .event("view")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>);
+client.createEvent(viewEvent);
+
+```
+  </div>
+</div>
+
+<%= partial 'shared/quickstart/query_eventserver' %>
+
+### Import More Sample Data
+
+<%= partial 'shared/quickstart/import_sample_data' %>
+
+A Python import script `import_eventserver.py` is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50") with some random assigned categories ( with categories "c1" to "c6"). Each user then randomly view 10 items.
+
+<%= partial 'shared/quickstart/install_python_sdk' %>
+
+Make sure you are under the `MySimilarProduct` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+
+```
+$ cd MySimilarProduct
+$ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+You should see the following output:
+
+```
+...
+User u10 views item i20
+User u10 views item i17
+User u10 views item i22
+User u10 views item i31
+User u10 views item i18
+User u10 views item i29
+160 events are imported.
+```
+
+<%= partial 'shared/quickstart/query_eventserver_short' %>
+
+## 5. Deploy the Engine as a Service
+
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MySimilarProduct' } %>
+
+<%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MySimilarProduct' } %>
+
+## 6. Use the Engine
+
+Now, You can retrieve predicted results. To retrieve 4 items which are similar to item ID "i1". You send this JSON `{ "items": ["i1"], "num": 4 }` to the deployed engine and it will return a JSON of the recommended items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{ "items": ["i1"], "num": 4 }' \
+http://localhost:8000/queries.json
+
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({"items": ["i1"], "num": 4})
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('items'=> array('i1'), 'num'=> 4));
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new('http://localhost:8000')
+
+# Query PredictionIO.
+response = client.send_query('items' => ['i1'], 'num' => 4)
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient("http://localhost:8000");
+
+// query
+
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "items", ImmutableList.of("i1"),
+        "num",  4
+    ));
+```
+  </div>
+</div>
+
+The following is sample JSON response:
+
+```
+{
+  "itemScores":[
+    {"item":"i43","score":0.7071067811865475},
+    {"item":"i21","score":0.7071067811865475},
+    {"item":"i46","score":0.5773502691896258},
+    {"item":"i8","score":0.5773502691896258}
+  ]
+}
+```
+
+*MySimilarProduct* is now running.
+
+<%= partial 'shared/quickstart/production' %>
+
+
+## Advanced Query
+
+### Recommend items which are similar to multiple items:
+
+```
+curl -H "Content-Type: application/json" \
+-d '{ "items": ["i1", "i3"], "num": 10}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"item":"i12","score":1.1700499715209998},{"item":"i21","score":1.1153550716504106},{"item":"i43","score":1.1153550716504106},{"item":"i14","score":1.0773502691896257},{"item":"i39","score":1.0773502691896257},{"item":"i26","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i38","score":0.9553418012614798},{"item":"i36","score":0.9106836025229592},{"item":"i46","score":0.9106836025229592}]}
+```
+
+In addition, the Query support the following optional parameters `categories`, `whiteList` and `blackList`.
+
+### Recommend items in selected categories:
+
+```
+curl -H "Content-Type: application/json" \
+-d '{
+  "items": ["i1", "i3"],
+  "num": 10,
+  "categories" : ["c4", "c3"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"item":"i21","score":1.1153550716504106},{"item":"i14","score":1.0773502691896257},{"item":"i26","score":1.0773502691896257},{"item":"i39","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i45","score":0.7886751345948129},{"item":"i47","score":0.7618016810571367},{"item":"i9","score":0.7618016810571367},{"item":"i28","score":0.7618016810571367},{"item":"i6","score":0.7618016810571367}]}
+```
+
+### Recommend items in the whiteList:
+
+```
+curl -H "Content-Type: application/json" \
+-d '{
+  "items": ["i1", "i3"],
+  "num": 10,
+  "categories" : ["c4", "c3"],
+  "whiteList": ["i21", "i26", "i40"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"item":"i21","score":1.1153550716504106},{"item":"i26","score":1.0773502691896257}]}
+```
+
+### Recommend items not in the blackList:
+
+```
+curl -H "Content-Type: application/json" \
+-d '{
+  "items": ["i1", "i3"],
+  "num": 10,
+  "categories" : ["c4", "c3"],
+  "blackList": ["i21", "i26", "i40"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"item":"i39","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i14","score":1.0773502691896257},{"item":"i45","score":0.7886751345948129},{"item":"i47","score":0.7618016810571367},{"item":"i6","score":0.7618016810571367},{"item":"i28","score":0.7618016810571367},{"item":"i9","score":0.7618016810571367},{"item":"i29","score":0.6220084679281463},{"item":"i30","score":0.5386751345948129}]}
+```
+
+#### [Next: DASE Components Explained](/templates/similarproduct/dase/)

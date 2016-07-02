@@ -1,0 +1,31 @@
+body {
+  font-family: $body-font-family;
+  color: $body-font-color;
+  background-color: $footer-background-color;
+}
+
+a {
+  color: $link-color;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Hack for links with anchors with fixed header!
+:target:before {
+  display: block;
+  content: '';
+  margin-top: -100px;
+  height: 100px;
+  visibility: hidden;
+}
+
+blockquote {
+  margin: 0;
+  p {
+    padding: 20px;
+  }
+
+  background-color: $blockquote-background-color;
+}

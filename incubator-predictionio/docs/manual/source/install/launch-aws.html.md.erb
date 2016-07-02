@@ -1,0 +1,60 @@
+---
+title: Launching PredictionIO on AWS
+---
+
+Deploying PredictionIO on Amazon Web Services is extremely easy thanks
+to AWS Marketplace. As long as you have access to AWS, you can launch a
+ready-to-use PredictionIO Amazon EC2 instance with a single click.
+
+## Prerequisites
+
+* Amazon Web Services account
+* Amazon EC2
+
+## Access AWS Marketplace
+
+Visit [PredictionIO product's page on AWS
+Marketplace](https://aws.amazon.com/marketplace/pp/B00RPIFSYS/) and sign in with
+your AWS account.
+
+## Using 1-Click Launch
+
+You should see the following screen after you have logged in.
+
+![alt text](../images/awsm-product.png)
+
+Under the big yellow "Continue" botton, select the region where you want to
+launch the PredictionIO EC2 instance, then click "Continue".
+
+![alt text](../images/awsm-1click.png)
+
+Review your instance's settings before launching. For quick prototyping work,
+we recommend using the "memory optimized" instances for the cheapest memory configurations at least the 
+"Memory Optimized R3 (r3.large)" or for larger datasets the "(r3.xlarge)".
+
+## Setting Security Group
+
+The default security group, marked by "AutogenByAWSMP", has the following ports
+opened to public:
+
+* 22 (SSH)
+* 7070 (PredictionIO Event Server)
+* 8000 (PredictionIO Server)
+* 8080 (Spark Master)
+* 9200 (Elasticsearch)
+
+## Start Using PredictionIO
+
+It may take a few minutes after the EC2 instance has launched for all
+PredictionIO components to become ready. When they are ready, you may connect to
+your instance, see [AWS
+documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html)
+for more details.
+
+Once you connect to your instance, you can find PredictionIO  at
+`/opt/PredictionIO` and the binary command path is `/opt/PredictionIO/bin`.
+
+<%= partial 'shared/install/proceed_template' %>
+
+NOTE: The AWS instance will have all PredictionIO components automatically started for
+you, so you could safely skip the **pio-start-all** command as described in QuickStart.

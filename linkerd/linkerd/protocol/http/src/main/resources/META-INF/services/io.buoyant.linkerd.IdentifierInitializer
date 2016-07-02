@@ -1,0 +1,2 @@
+io.buoyant.linkerd.protocol.http.MethodAndHostIdentifierInitializer
+io.buoyant.linkerd.protocol.http.PathIdentifierInitializer

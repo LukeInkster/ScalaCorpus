@@ -1,0 +1,50 @@
+mode: deploy
+prompt_user: true
+
+openwhisk_home: "{{ lookup('env', 'OPENWHISK_HOME')|default(playbook_dir + '/..', true) }}"
+
+whisk:
+  version:
+    date: "{{ansible_date_time.iso8601}}"
+
+docker_image_tag: latest
+docker:
+  port: 4243
+  restart:
+    policy: always
+
+# port means outer port
+controller:
+  port: 10001
+
+consul:
+  port:
+    server: 8300
+    serf_lan: 8301
+    serf_wan: 8302
+    rpc: 8400
+    http: 8500
+    dns: 8600
+
+kafka:
+  port: 9092
+  ras:
+    port: 9093
+
+zookeeper:
+  port: 2181
+
+invoker:
+  port: 12001
+
+nginx:
+  port:
+    http: 80
+    api: 443
+    adminportal: 8443
+
+db:
+  immortal: subjects
+  authkeys:
+  - guest
+  - whisk.system

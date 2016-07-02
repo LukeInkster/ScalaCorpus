@@ -1,0 +1,43 @@
+.button {
+  border-radius: 5px;
+}
+
+.button-primary {
+  padding: 10px 30px 10px 30px;
+  text-shadow: none;
+  border: none;
+  border-radius: 100px;
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-block;
+  background-color: $button-primary-background-color;
+  color: $button-primary-font-color;
+  &:hover {
+    background-color: $button-primary-hover-background-color;
+    color: $button-primary-hover-font-color;
+    text-decoration: none;
+  }
+}
+
+
+.button-download {
+  box-sizing: border-box;
+  @extend .button;
+  height: 40px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  padding: 7px 25px 0 25px;
+  background-color: $button-download-background-color;
+  color: $button-download-font-color;
+
+  &:hover {
+    text-decoration: none;
+  }
+  i {
+    font-size: 24px;
+    line-height: 24px;
+    vertical-align: bottom;
+    margin-right: 8px;
+  }
+}

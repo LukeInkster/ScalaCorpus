@@ -1,0 +1,9 @@
+@(name: String, engineFactory: String)
+{
+  "id": "default",
+  "description": "@{name}",
+  "engineFactory": "@{engineFactory}",
+  "datasource": {
+    "multiplier": 2
+  }
+}

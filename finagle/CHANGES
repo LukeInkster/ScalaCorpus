@@ -1,0 +1,2663 @@
+.. Author notes: this file is formatted with restructured text
+  (http://docutils.sourceforge.net/docs/user/rst/quickstart.html)
+  as it is included in Finagle's user's guide.
+
+Note that ``RB_ID=#`` correspond to associated messages in commits.
+
+6.x
+-----
+
+Deprecations
+~~~~~~~~~~~~
+
+  * finagle-http: Removed DtabFilter.Finagle in favor of DtabFilter.Extractor.
+    ``RB_ID=840600``
+
+  * finagle-zipkin: Deprecate `ZipkinTracer` in favor of `ScribeZipkinTracer`.
+    ``RB_ID=840494``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle: Builds are now only for Java 8 and Scala 2.11. See the
+    `blog post <https://finagle.github.io/blog/2016/04/20/scala-210-and-java7/>`_
+    for details. ``RB_ID=828898``
+
+  * finagle: Finagle is no longer depending on Twitter's clone of JSR166e, JDK 8
+    API is used instead. ``RB_ID=833652``
+
+  * finagle-cacheresolver: package contents merged into finagle-memcached.
+    ``RB_ID=833602``
+
+  * finagle-core: Renamed DeadlineFilter to DeadlineStatsFilter, which now only
+    records stats for the number of requests with exceeded deadlines, the
+    remaining deadline budget, and the transit latency of requests. It no longer
+    rejects requests and has no configuration. We have decided not to pursue
+    Deadline Admission Control at this time. ``RB_ID=829372``
+
+  * finagle-core: `ClientBuilder.socksProxy(SocketAddress)` is removed.
+    Use command line flags (see `c.t.f.socks.SocksProxyFlags.scala`) instead.
+    ``RB_ID=834634``
+
+  * finagle-core: Removed "closechans" and "closed" counters from `ChannelStatsHandler`.
+    ``RB_ID=835194``
+
+  * finagle-core: Removed the "load" gauge from `StatsFilter` as it was duplicated
+    by the "pending" gauge. ``RB_ID=835199``
+
+  * finagle-core: `c.t.finagle.NoStacktrace` is removed. Use `scala.util.control.NoStackTrace`
+    instead. ``RB_ID=833188``
+
+  * finagle-core: `c.t.finagle.Failure.withStackTrace` is removed. Use system property
+    `scala.control.noTraceSuppression` instead to fill stacktraces in Finagle's failures.
+    ``RB_ID=833188``
+
+  * finagle-core: `c.t.f.filter.RequestSerializingFilter` is removed.
+    Use `c.t.f.filter.RequestSemaphoreFilter` instead. ``RB_ID=839372``
+
+  * finagle-core: `SessionParams` no longer contains `acquisitionTimeout`. Instead, it
+    was extracted into `ClientSessionParams`. ``RB_ID=837726``
+
+  * finagle-core: Changed visibility of PipeliningDispatcher to private[finagle].  Clients should
+    not be affected, since it's not a part of the end-user API. ``RB_ID=843153``.
+
+  * finagle-http: Deprecate channelBufferUsageTracker in favor of maxRequestSize.
+    ``RB_ID=831233``
+
+  * finagle-http: HttpClientDispatcher, HttpServerDispatcher, and
+    ConnectionManager are no longer public. ``RB_ID=830150``
+
+  * finagle-redis: Deprecated methods have been removed from the client API.
+    ``RB_ID=843455``
+
+  * finagle-redis: `c.t.f.redis.*Commands` traits are now package-private.
+    ``RB_ID=843455``
+
+  * finagle-redis: Replace `ChannelBuffer` with `Buf` in client's:
+
+      - `HashCommands`: ``RB_ID=843596``
+      - `ListCommands`: ``RB_ID=844596``
+      - `BtreeSortedSetCommands`: ``RB_ID=844862``
+      - `HyperLogLogCommands`: ``RB_ID=844945``
+      - `PubSubCommands`: ``RB_ID=845087``
+      - `SetCommands`: ``RB_ID=845578``
+      - `SortedSetCommands`: ``RB_ID=846074``
+
+  * finagle-memcached: `c.t.f.memcached.Client` now uses `c.t.bijection.Bijection`
+    instead of `c.t.u.Bijection`. ``RB_ID=834383``
+
+  * finagle-thrift: As part of the migration off of `Codec`, remove
+    `c.t.f.thrift.ThriftClientBufferedCodec` and `c.t.f.thrift.ThriftClientBufferedCodecFactory`
+    which were used by `ClientBuilder.codec` and `ServerBuilder.codec`. Replace usage
+    with `ClientBuilder.stack(Thrift.client.withBufferedTransport)`
+    or `ServerBuilder.stack(Thrift.server.withBufferedTransport)`. ``RB_ID=838146``
+
+  * finagle-zipkin: Moved case classes and companion objects `Span`, `ZipkinAnnotation`,
+    `BinaryAnnotation`, `Endpoint`, `Sampler` and `SamplingTracer` to finagle-zipkin-core.
+    ``RB_ID=840494``
+
+  * finagle-mysql: Removed `c.t.f.exp.mysql.transport.MysqlTransporter`, as it was not useful for it
+    to be public. ``RB_ID=840718``
+
+Bug Fixes
+~~~~~~~~~
+
+  * finagle-core: PipeliningDispatcher now serializes "write and enqueue Promise" so it's no longer
+    possible for the wrong response to be given to a request. ``RB_ID=834927``
+
+  * finagle-http: Servers which aggregate content chunks (streaming == false) now return a 413
+    response for streaming clients who exceed the servers' configured max request size.
+    ``RB_ID=828741``
+
+  * finagle-mysql: `c.t.f.exp.mysql.PreparedCache` now closes prepared statements when no one holds
+    a reference to the cached future any longer.  This fixes a race condition where the cached
+    future could be evicted and the prepared statement closed while a user tries to use that
+    prepared statement.  ``RB_ID=833970``
+
+  * finagle-netty4-http: Servers now see the correct client host address for requests. ``RB_ID=844076``
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: Added gauge, "scheduler/blocking_ms" measuring how much time,
+    in milliseconds, the ``com.twitter.concurrent.Scheduler`` is spending doing blocking
+    operations on threads that have opted into tracking. This also moves the
+    "scheduler/dispatches" gauge out of TwitterServer into Finagle. ``RB_ID=828289``
+
+  * finagle-core: Added a FailureAccrualPolicy that marks an endpoint
+    dead when the success rate in a specified time window is under the
+    required threshold. ``RB_ID=829984``
+
+  * finagle-core: `StackServer` now installs an `ExpiringService` module by default. This
+    allows servers to have control over session lifetime and brings the `StackServer` to
+    feature parity with `ServerBuilder`.  ``RB_ID=837726``
+
+  * finagle-exp: Changed DarkTrafficFilter to forward interrupts to dark service. ``RB_ID=839286``
+
+  * finagle-http: ContextFilter and Dtab-extractor/injector logic has been moved from
+    the http dispatchers into the client and server stacks. ``RB_ID=840600``
+
+  * finagle-mysql: Added a `withMaxConcurrentPreparedStatements` method to the client which lets you
+    specify how many prepared statements you want to cache at a time.  ``RB_ID=833970``
+
+  * finagle-redis: Adds support for scripting commands. ``RB_ID=837538``
+
+  * finagle-netty4: SOCKS5 proxy support. ``RB_ID=839856``
+
+  * finagle-zipkin-core: A new module containing most of the functionality
+    from finagle-zipkin, leaving finagle-zipkin with only Scribe specific code
+    and a service loader. This allows for other transports to be implemented
+    in separate modules. For example the upcoming finagle-zipkin-kafka.
+    ``RB_ID=840494``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: For SSLEngine implementations supplied via configuration or
+    created by Finagle, the setEnableSessionCreation method is no longer called.
+    The supplied value, true, is the default for JSSE implementations, and for
+    other engines this can be an unsupported operation. ``RB_ID=845765``
+
+  * finagle-core: Pipelined protocols (memcached, redis) no longer prevent
+    connections from being cut by interrupts.  Instead, interrupts are masked
+    until a subsequent ten second timeout has expired without a response in the
+    pipeline. ``RB_ID=843153``
+
+  * finagle-core: MonitorFilter now installs the parameterized monitor, and will
+    no longer fail the request automatically if any exception is thrown
+    synchronously (like if an exception is thrown in an onSuccess or onFailure
+    block).  This removes a race, and makes Finagle more deterministic.
+    ``RB_ID=832979``
+
+6.35.0
+------
+
+Deprecations
+~~~~~~~~~~~~
+  * finagle: remove unused finagle-validate and finagle-testers packages. ``RB_ID=818726``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: DeadlineFilter is now per-connection, so the max rejection percentage
+    is not shared across clients. This prevents a single client from exceeding the rejection
+    budget. ``RB_ID=813731``.
+
+  * finagle-core: The use of keytool in PEMEncodedKeyManager has been removed and instead the
+    keystore is being loaded from the pkcs12 file. ``RB_ID=832070``
+
+  * finagle-http: Local Dtabs are now encoded into the `Dtab-Local` header.  `X-Dtab` headers
+    may still be read but should be considered deprecated. ``RB_ID=815092``
+
+  * finagle-thrift: Removed duplicate "thrift" label on Thrift/ThriftMux scrooge-related
+    server stats. ``RB_ID=816825``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+  * finagle-redis: Deprecated ChannelBuffer exposing apis for string commands. ``RB_ID=817766``.
+
+  * finagle-core: DefaultClient has been removed. Implementors should prefer `c.t.f.StackClient`
+    ``RB_ID=812681``.
+
+  * finagle-core: When a client is created, its server set resolution is started eagerly.
+    ``RB_ID=806940``
+
+  * finagle-core: Dentry now takes a Dentry.Prefix instead of a Path. ``RB_ID=813914``
+
+  * finagle-core: Remove `*.client.withTransport.socksProxy` param as part of the initiative to
+    move to CLI flags based configuration for SOCKS. ``RB_ID=842512``
+
+  * finagle-thrift/thriftmux: Thrift servers constructed using `Thrift.serveIface` now use
+    `Thrift.server.serveIface`. ThriftMux servers constructed using `ThriftMux.serveIface` now use
+    `ThriftMux.server.serveIface`. ``RB_ID=824865``
+
+  * finagle-cache-resolver: `c.t.f.cacheresolver.ZookeeperCacheNodeGroup` has been removed from the
+    API since we no longer check for the zookeeper data for the cache pool size to refresh for the
+    changes in the serverset. ``RB_ID=811190``
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-http: http 1.1 running on netty4 is configurable via `c.t.finagle.netty4.http.exp.Netty4Impl`.
+    It has not been tested in production and should be considered beta software. ``RB_ID=828188``
+
+  * finagle-core: Multi-line Dtabs may now contain line-oriented comments beginning with '#'.
+    Comments are omitted from parsed Dtabs. ``RB_ID=818752``
+
+  * finagle-http: new stack params MaxChunkSize, MaxHeaderSize, and MaxInitialLineLength
+    are available to configure the http codec. ``RB_ID=811129``
+
+  * finagle-mux: Mux now has support for fragmenting Tdispatch and Rdispatch payloads.
+    This helps with head-of-line blocking in the presence of large payloads and allows
+    long transmissions to be interrupted. ``RB_ID=794641``.
+
+  * finagle-core: Dtabs allow wildcard path elements in prefixes. ``RB_ID=813914``
+
+  * finagle-netty4: HTTP proxy support for any Finagle Netty 4 client. ``RB_ID=819752``
+
+  * finagle-core: Gauge for dns resolutions awaiting lookups. ``RB_ID=822410``
+
+Bug Fixes
+~~~~~~~~~
+
+  * finagle-http: Ensure that service closure is delayed until chunked response bodies
+    have been processed. ``RB_ID=813110``
+
+  * finagle-stats: Ensure that histogram snapshotting does not fall behind if snapshot()
+    is not called at least once per interval. ``RB_ID=826149``
+
+6.34.0
+------
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: GenSerialClientDispatcher fails pending and subsequent requests when
+    its underlying transport closes. ``RB_ID=807590``
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: Include upstream/downstream addresses/client ids and request trace id
+    in exceptions that extend `c.t.f.HasRemoteInfo` (including `c.t.f.SourcedException`),
+    accessible via the `remoteInfo` value. ``RB_ID=797082``
+
+  * finagle-core: Introduce `c.t.f.service.ResponseClassifier` for HTTP servers,
+    which allows developers to give Finagle the additional application specific knowledge
+    necessary in order to properly classify responses.``RB_ID=800179``
+
+  * finagle: Export two new histograms: `request_payload_bytes` and `response_payload_bytes`
+    for the following protocols: HTTP (non-chunked), Mux, ThriftMux and Thrift. ``RB_ID=797821``
+
+  * finagle-core: Define `c.t.f.Address` to represent an endpoint's physical location.
+    Resolvers and namers may attach metadata such as weight to individual endpoint addresses.
+    ``RB_ID=792209``
+
+  * finagle-http: Introduce convenience extractors to pattern match `c.t.f.http.Response.status`
+    against the different categories. ``RB_ID=802953``
+
+  * finagle-http: Add `toBoolean` method in `StringUtil` to parse strings to boolean consistently.
+    ``RB_ID=804056``
+
+  * finagle-http: Servers now actually decompress requests when decompression is turned on.
+    ``RB_ID=810629``
+
+  * finagle-redis: Add support for SENTINEL commands. ``RB_ID=810663``
+
+  * finagle-redis: Support for Pub/Sub. ``RB_ID=810610``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `c.t.f.Codec.prepareConnFactory(ServiceFactory)` is marked `final`, override
+    `c.t.f.Codec.prepareConnFactory(ServiceFactory, Stack.Params)` instead. ``RB_ID=797821``
+
+  * finagle-core: `c.t.f.Codec.newClientDispatcher(Transport)` is marked `final`, override
+    `c.t.f.Codec.newClientDispatcher(Transport, Stack.Params)` instead. ``RB_ID=797821``
+
+  * finagle-core: Removed deprecations: ``RB_ID=800974``
+    - Removed `c.t.f.Service.release`, replace usage with `Service.close()`.
+    - Removed `c.t.f.ServiceFactory.make`, replace usage with `ServiceFactory.apply`.
+    - Removed `c.t.f.ProxyServiceFactory`, replace usage with `ServiceFactoryProxy`.
+    - Removed deprecated `c.t.f.service.FailureAccrualFactory` constructor.
+    - Removed `c.t.f.netty3.ChannelBufferBuf.apply`, replace usage with `ChannelBufferBuf.Owned.apply`.
+    - Removed `c.t.f.util.InetAddressUtil.Loopback`, replace usage with `java.net.InetAddress.getLoopbackAddress`.
+    - Removed `c.t.f.tracing.TracingFilter`, replace usage with `TraceInitializationFilter` and `(Client|Server)TracingFilter`.
+
+  * finagle-core: `c.t.f.Addr.Bound.addr` type changed from `Set[SocketAddress]` to
+    `Set[c.t.f.Address]`. We provide a migration guide below for the most common cases.
+
+    Callers of `c.t.f.Addr.Bound.addr` must handle `Set[c.t.f.Address]` instead of
+    `Set[SocketAddresses]`. If you do something with the `SocketAddress` and expect the underlying
+    type to be `InetSocketAddress`, use `c.t.f.Address.Inet.addr` to get the underlying
+    `InetSocketAddress`.
+
+    `c.t.f.Addr` constructors and `c.t.f.Name.bound` method now accept `c.t.f.Address` instead
+    of `SocketAddress`. For most cases, wrapping the `InetSocketAddress` in an `Address.Inet`
+    will fix the compile error.
+
+    Any other `SocketAddress` subclass is currently incompatible with `c.t.f.Address`. Instead,
+    you should encode any additional information in the metadata field of `c.t.f.Address.Inet`
+    or `c.t.f.exp.Address.ServiceFactory`. ``RB_ID=792209``
+
+  * finagle-core: Delete `c.t.f.ServiceFactorySocketAddress` and replace usages with
+    `c.t.f.exp.Address.ServiceFactory`. ``RB_ID=792209``
+
+  * finagle-core: Delete `c.t.f.WeightedSocketAddress` and instead use
+    `c.t.f.addr.WeightedAddress` to represent address weights. ``RB_ID=792209``
+
+  * finagle-core: `c.t.f.builder.ClientBuilder.hosts` takes a Seq of `InetSocketAddress` instead of
+    `SocketAddress`. If you get a compile error, change the static type to `InetSocketAddress` if
+    you can. Otherwise, cast it at runtime to `InetSocketAddress`. ``RB_ID=792209``
+
+  * finagle-core: `c.t.f.client.Transporter.EndpointAddr` takes a `c.t.f.Address` as its
+    parameter instead of `SocketAddress`. ``RB_ID=792209``
+
+  * finagle-core: `c.t.f.service.FauilureAccrualFactory.Param(FailureAccrualPolicy)` is removed -
+    it's not safe to configure Failure Accrual with a shareable instance of the policy, use
+    `() => FailureAccrualPolicy` instead. ``RB_ID=802953``
+
+  * finagle-core: `$Client.withSessionQualifier.failureAccrualPolicy` has been removed from the API
+    since it enables an experimental feature (use Stack's `.configured` API instead). ``RB_ID=802953``
+
+  * finagle-core: `c.t.f.service.exp.FailureAccrualPolicies` (Java-friendly API) has been removed -
+    use `c.t.f.service.exp.FailureAccrualPolicy` instead.
+
+  * finagle-core: DefaultServer is removed. Protocol implementors should use StackServer instead.
+    ``RB_ID=811918``
+
+  * finagle-memcached: `c.t.f.memcached.protocol.text.Memcached` no longer takes a `StatsReceiver`,
+    pass it to a `(Client/Server)Builder` instead. ``RB_ID=797821``
+
+  * finagle-redis: `c.t.f.redis.Redis` no longer takes a `StatsReceiver`, pass it to a
+    `(Client/Server)Builder` instead. ``RB_ID=797821``
+
+  * finagle-core: `c.t.f.http.MapHeaderMap` no longer takes a `mutable.Map[String, Seq[String]]` as
+    a constructor parameter. `apply` method provides a similar functionality.
+
+Bug Fixes
+~~~~~~~~~
+
+  * finagle-core: Fixed `getAll` method on `c.t.f.http.MapHeaderMap`, now it is case insensitive.
+    `apply` method was altering the provided header names. This is fixed it is now possible to
+    iterate on the original header names.
+
+6.33.0
+------
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: Introduce the `c.t.f.service.PendingRequestFactory` module in the client Stack.
+    The module allows clients to limit the number of pending requests per connection. It is disabled
+    by default. ``RB_ID=795491``
+
+  * finagle-core: Introduce the `c.t.f.filter.ServerAdmissionControl` module in the server Stack,
+    which is enabled through the param `c.t.f.param.EnableServerAdmissionControl`. Users can define
+    their own admission control filters, which reject requests when the server operates beyond
+    its capacity. These rejections apply backpressure and allow clients to retry requests on
+    servers that may not be over capacity. The filter implementation should define its own logic
+    to determine over capacity. One or more admission control filters can be installed through
+    the `ServerAdmissionControl.register` method. ``RB_ID=776385``
+
+  * finagle-core: Introduce `c.t.f.service.ResponseClassifier` which allows developers to
+    give Finagle the additional application specific knowledge necessary in order to properly
+    classify them. Without this, Finagle can only safely make judgements about transport
+    level failures. This is now used by `StatsFilter` and `FailureAccrualFactory` so that
+    application level failures can be used for both success metrics and failure accrual.
+    ``RB_ID=772906``
+
+  * finagle-core: Added a new 'Endpoints' section on client pages, listing the weights, paths,
+    and resolved endpoints for each dtab.``RB_ID=779001``
+
+  * finagle-core: Introduce discoverable stack params which are available on every client/server
+    via the `with`-prefixed methods. ``RB_ID=781833``
+
+  * finagle-memcached: Added `c.t.f.memcached.BaseClient.checkAndSet` which exposes the difference
+    between a conflict and a not found result.
+
+  * finagle-mux: Add a Wireshark dissector that can decode Mux messages. ``RB_ID=779482``
+
+  * finagle-stats: Define flag `c.t.f.stats.statsFilterFile` as GlobalFlag[Set[File]] to take
+    comma-separated multiple files. ``RB_ID=793397``
+
+  * finagle-mux: Tinit/Rinit are now available and permit feature negotiation. ``RB_ID=793350``
+
+Deprecations
+~~~~~~~~~~~~
+
+  * finagle-memcached: `c.t.f.memcached.BaseClient.cas` is deprecated in favor of the richer
+    `checkAndSet` method.
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: All the deprecated exceptions from `Exceptions.scala` have been removed.
+    ``RB_ID=774658``
+  * finagle-thrift: Remove the `framed` attributes from `c.t.f.Thrift.Client` and
+    `c.t.f.Thrift.Server`.  This behavior may now be controlled with `c.t.f.Thrift.param.Framed`.
+  * finagle-core: Unused `c.t.f.builder.NonShrinkingCluster` has been removed.
+    ``RB_ID=779001``
+
+  * finagle-thrift: `c.t.f.ThriftRichClient` has a new abstract protected method
+    `responseClassifier: ResponseClassifier`. If your implementation does not need
+    this, you can implement it with `ResponseClassifier.Default`. ``RB_ID=791470``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-thrift,thriftmux: Deserialization of Thrift responses now happens as part
+    of service application which means that it will now be part of the latency reported by
+    `StatsFilter`. The actual latency as perceived by clients will not have changed, but
+    for clients that spend significant time deserializing and do not have higher level
+    metrics this may come as a surprise. ``RB_ID=772931``
+
+  * finagle-mux,thriftmux: The default `closeTimeout` in ping based failure detection
+    is changed from Duration.Top to 4 seconds, to allow a session to be closed by default
+    when a ping response times out after 4 seconds. This allows sessions to be reestablished
+    when there may be a networking issue, so that it can choose an alternative networking
+    path instead. ``RB_ID=773649``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-thrift: Remove the `framed` attributes from `c.t.f.Thrift.Client` and
+    `c.t.f.Thrift.Server`.  This behavior may now be controlled with `c.t.f.Thrift.param.Framed`.
+
+6.32.0
+------
+
+NOT RELEASED
+
+6.31.0
+------
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: `c.t.f.Server` now has a `serveAndAnnounce` method that accepts a `SocketAddress`
+    as an address. ``RB_ID=758862``
+
+  * finagle-core: `c.t.f.service.Retries` now supports adding delay between each automatic retry.
+    This is configured via the `Retries.Budget`. ``RB_ID=768883``
+
+  * finagle-core: FailureAccrualFactory now uses a FailureAccrualPolicy to determine when to
+    mark an endpoint dead. The default policy, FailureAccrualPolicy.consecutiveFailures(),
+    mimicks existing functionality, and FailureAccrualPolicy.successRate() operates on the
+    exponentially weighted average success rate over a window of requests.``RB_ID=756921``
+
+  * finagle-core: Introduce `c.t.f.transport.Transport.Options` to configure transport-level options
+    (i.e., socket options `TCP_NODELAY` and `SO_REUSEADDR`). ``RB_ID=773824``
+
+  * finagle-http: `c.t.f.http.exp.Multipart` now supports both in-memory and on-disk file uploads.
+    ``RB_ID=RB_ID=769889``
+
+  * finagle-netty4: Hello World. Introduce a `Listener` for Netty 4.1. This is still considered beta.
+    ``RB_ID=718688``
+
+  * finagle-netty4: Introduce `ChannelTransport` for Netty 4.1. ``RB_ID=763435``
+
+  * finagle-thrift: `c.t.f.ThriftRichClient` implementations of `newServiceIface`
+    method that accept a `label` argument to pass to the `ScopedStats` instance. ``RB_ID=760157``
+
+  * finagle-stats: Added `c.t.f.stats` now has a `statsFilterFile` flag which will read a blacklist
+    of regex, newline-separated values. It will be used along with the `statsFilter` flag for stats
+    filtering. ``RB_ID=764914``
+
+Deprecations
+~~~~~~~~~~~~
+
+  * finagle-core: the #channelFactory method of `c.t.f.builder.ServerBuilder` has been deprecated
+    in favor of the `c.t.f.netty3.numWorkers` flag. ``RB_ID=718688``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: The behavior for `c.t.f.util.DefaultMonitor` has changed such that
+    unhandled exceptions are propagated to `c.t.u.RootMonitor` except for
+    `c.t.f.Failures` with a log `Level` below INFO. ``RB_ID=758056``
+
+  * finagle-core: The metrics for requeues `requeue/requeues`, `requeue/budget` and
+    `requeue/budget_exhausted` have moved under retries. They are now `retries/requeues`,
+    `retries/budget` and `retries/budget_exhausted`. ``RB_ID=760213``
+
+  * finagle-core: `c.t.f.service.RetryFilter` and `c.t.f.service.RetryExceptionsFilter`
+    now default to using a `RetryBudget` to mitigate retry amplification on downstream
+    services. The previous behavior can be achieved by explicitly passing in
+    `RetryBudget.Infinite`. ``RB_ID=766302``
+
+  * finagle-core: `c.t.f.factory.TrafficDistributor` now suppresses changes when a bound
+    address is updated from a valid set to an error. Instead, it continues using stale
+    data until it gets a successful update.
+
+  * finagle-http: Unhandled exceptions from user defined HTTP services are now converted
+    into very basic 500 responses so clients talking to those services see standard HTTP
+    responses instead of a dropped connection. ``RB_ID=755846``
+
+  * finagle-memcached: Moved metrics from underlying `KetamaPartitionedClient` for Memcached clients
+    to share the same scope of the underlying finagle client. ``RB_ID=771691``
+
+  * finagle-mux: `com.twitter.finagle.mux.ThresholdFailureDetector` is turned on by
+    default. ``RB_ID=756213``
+
+  * finagle-serversets: The `c.t.f.serverset2.Zk2Resolver` now surfaces `Addr.Pending`
+    when it detects that its underlying ZooKeeper client is unhealthy. Unhealthy is defined
+    as non-connected for greater than its 'unhealthyWindow' (which defaults to 5 minutes).
+    ``RB_ID=760771``
+
+  * finagle-serversets: The `c.t.f.serverset2.ZkSession` now uses an unbounded semaphore to
+    limit to 100 outstanding zookeeper requests at any one moment. ``RB_ID=771399``
+
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `BackupRequestLost` is no longer itself an `Exception`. Use
+    `BackupRequestLost.Exception` in its place. ``RB_ID=758056``
+
+  * finagle-core: Replaced `c.t.f.builder.ClientConfig.Retries` with
+    `c.t.f.service.Retries.Policy`. ``RB_ID=760213``
+
+  * finagle-core: A deprecated `c.t.f.CancelledReadException` has been removed.
+    ``RB=763435``
+
+  * finagle-http: `c.t.f.http.exp.Multipart.decodeNonChunked` has been removed from
+    the public API. Use `c.t.f.http.Request.multipart` instead. Also
+    `c.t.f.http.exp.Multipart.FileUpload` is no longer a case class, but base trait
+    for `Multipart.InMemoryFileUpload` and `Multipart.OnDiskFileUpload`. ``RB_ID=769889``
+
+  * finagle-mux: `c.t.f.FailureDetector.apply` method is changed to private scope,
+    to reduce API surface area. Using `FailureDetector.Config` is enough to config
+    session based failure detection behavior. ``RB_ID=756833``
+
+  * finagle-mux: `closeThreshold` in `c.t.f.mux.FailureDetector.ThresholdConfig` is
+    changed to `closeTimeout`, from an integer that was used as a multiplier to time
+    duration. This makes it easier to config. ``RB_ID=759406``
+
+Bug Fixes
+~~~~~~~~~
+
+  * finagle-thrift: `c.t.f.ThriftRichClient` scoped stats label is now threaded
+    properly through `newServiceIface` ``RB_ID=760157``
+
+6.30.0
+------
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: `com.twitter.finagle.client.LatencyCompensator` allows its
+    default Compensator value to be set via an API call. This allows
+    libraries to set defaults for clients that have not configured this module.
+    ``RB_ID=750228``
+
+  * finagle-core: New Resolver `com.twitter.finagle.FixedInetResolver` extends
+    InetResolver by caching successful DNS lookups indefinitely. It's scheme is 'fixedinet'.
+    This is used by clients or resolvers that do not want or expect
+    host->ip map changes (such as the zk2 resolver and twemcache client).
+    ``RB_ID=753712``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `RetryPolicy.tries` now uses jittered backoffs instead of
+    having no delay. ``RB_ID=752629``
+
+  * finagle-core: `FailureAccrualFactory` uses jittered backoffs as the duration
+    to mark dead for, if `markDeadFor` is not configured. ``RB_ID=746930``
+
+  * finagle-core: The transit latency (transit_latency_ms) and deadline budget
+    (deadline_budget_ms) stats are now only recorded for servers, not for
+    clients anymore, since they're only meaningful for servers. ``RB_ID=75268``
+
+  * finagle-http: Clients sending requests with payloads larger than the server
+    accepts (default 5MB) now receive a HTTP 413 response instead of a channel
+    closed exception.  ``RB_ID=753664``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `TimerFromNettyTimer` is renamed to `HashedWheelTimer` and
+    the constructor accepting `org.jboss.netty.util.Timer` made private. For
+    compatibility, `HashedWheelTimer` has additional constructors to match
+    those provided by `org.jboss.netty.util.HashedWheelTimer`. ``RB_ID=748514``
+
+  * finagle-httpx / finagle-httpx-compat: Renamed to finagle-http and
+    finagle-http-compat respectively. This changes the package names, e.g.:
+    com.twitter.finagle.httpx to com.twitter.finagle.http. ``RB_ID=751876``
+
+  * finagle-core: Marked `HandletimeFilter` private[finagle], and renamed it to
+    `ServerStatsFilter`. ``RB_ID=75268``
+
+  * finagle-zipkin: Drop `c.t.zipkin.thrift.Annotation.duration` and associated thrift field
+    `c.t.f.thrift.thrift.Annotation.duration`. ``RB_ID=751986``
+
+  * finagle-stress: Project has been removed from Finagle. ``RB_ID=752201``
+
+  * finagle-swift: Project has been moved off of Finagle to
+    https://github.com/finagle/finagle-swift . ``RB_ID=752826``
+
+6.29.0
+------
+
+Deprecations
+~~~~~~~~~~~~
+
+  * finagle-http: Deprecated in favour of finagle-httpx and now removed.
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: Provides a `RetryFilter` which takes a
+    `RetryPolicy[(Req, Try[Rep])]` and allows you to retry on both "successful"
+    requests, such as HTTP 500s, as well as failed requests. The `Req`
+    parameterization facilitates using the request to determine if retrying is
+    safe (i.e. the request is idempotent).
+
+  * finagle-httpx: Experimental support `multipart/form-data` (file uploads)
+    decoding via `c.t.f.httpx.exp.Multipart`. ``RB_ID=730102``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `InetResolver.bind` will now succeed if any hostname resolution
+    succeeds. Previous behavior required that all hosts are successfully resolved.
+    ``RB_ID=737748``
+
+  * finagle-core: DNS lookups in InetResolver are no longer cached
+    within Finagle according to `networkaddress.cache.ttl`; we rely
+    instead on however caching is configured in the JVM and OS. ``RB_ID=735006``
+
+  * finagle-core: After being revived, a `FailureAccrualFactory` enters a
+    'probing' state wherein it must successfully satisfy a request before
+    accepting more. If the request fails, it waits for the next `markDeadFor`
+    period. ``RB_ID=747541``
+
+  * finagle-serversets: DNS lookups in Zk2Resolver are no longer
+    cached within Finagle according to `networkaddress.cache.ttl`;
+    instead they are cached indefinitely. ``RB_ID=735006``
+
+  * finagle-redis: c.t.f.Redis now uses a pipelined dispatcher along with
+    a concurrent load balancer to help eliminate head-of-line blocking.
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `RetryingFilter`, which takes a RetryPolicy[Try[Nothing]]` and
+    is invoked only on exceptions, has been renamed to `RetryExceptionsFilter`.
+    `RetryExceptionsFilter` is a subclass of `RetryFilter`, which takes a
+    `RetryPolicy[(Req, Try[Rep])]` and allows you to retry on both "successful"
+    requests, such as HTTP 500s, as well as failed requests. The `Req`
+    parameterization facilitates using the request to determine if retrying is
+    safe (i.e. the request is idempotent).
+
+  * finagle-core: Name.all is now private to `com.twitter.finagle`.
+
+  * finagle-memcached: Unified stack-based construction APIs and cleanup internal
+    constructors. In particular, `KetamaClient` was removed and `KetamaPartitionClient`
+    and `KetamaFailureAccrualFactory` are now sealed inside Finagle. See
+    [[com.twitter.finagle.Memcached]] for how to construct a finagle-memcached client.
+
+  * finagle-redis: Port the c.t.f.Redis protocol object to the StackClient API.
+    A redis client can now be constructed and configured like the rest of the
+    finagle subprojects.
+
+6.28.0
+------
+
+New Features
+~~~~~~~~~~~~
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: Weights are no longer supported by the load balancers. They are moved
+    one level above and interpreted by a new module, the `TrafficDistributor`. This
+    frees the balancers to have non-linear load metrics. It also changes the semantics
+    of weights. They are now normalized by size of endpoints that share the same weight
+    and interpreted proportional to offered load (however, they can still be though of,
+    roughly, as multipliers for traffic). ``RB_ID=677416``
+
+  * finagle-core: The RequestSemaphoreFilter now sheds load by dropping the tail of the queue
+    and failing it with a `Failure.Restartable`. Previously, the filter had an unbounded
+    queue but now the default size is 0 (i.e. no queueing). The dropped requests are in
+    turn requeued by Finagle clients with protocol support (e.g. Http, ThriftMux).
+    ``RB_ID=696934``
+
+  * finagle-core: `ServerBuilder.ServerConfig.BindTo`, `ServerBuilder.ServerConfig.MonitorFactory`,
+    and `ServerBuilder.ServerConfig.Daemonize`, are now private to `com.twitter.finagle.builder`. ``RB_ID=730865``
+
+  * finagle-memcachedx: Renamed to finagle-memcached.
+
+  * finagle-stats: Standard deviation ("$statName.stddev") is no longer exported.
+    ``RB_ID=726309`` (follow up to ``RB_ID=717647``)
+
+  * finagle-serversets: `namer/bind_latency_us` stat now counts only
+    time in name resolution, not service acquisition.
+    `namer/{dtabcache,namecache,nametreecache}/misstime_ms` stats are
+    no longer exported. ``RB_ID=730309``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `c.t.f.jsr166y` has been replaced with Java 7 API. finagle: Replace JSR166y
+    with Java 7 API. ``RB_ID=720903``
+
+  * finagle-core: `LoadBalancerFactory` no longer takes endpoints with weights as
+    per the decoupling mentioned in runtime changes. ``RB_ID=677416``
+
+  * finagle-core: `RequestSemaphoreFilter.Param` now accepts a `com.twitter.concurrent.AsyncSemaphore`
+    instead of an integer representing the max concurrency. ``RB_ID=696934``
+
+  * finagle-core: removed `c.t.f.asyncDns` flag and `c.t.f.SyncInetResolver`; DNS resolution is
+    now always asynchronous. ``RB_ID=734427``
+
+  * finagle-core: `ClientBuilder.ClientConfig.DefaultParams`, `ClientBuilder.ClientConfig.DestName`,
+    `ClientBuilder.ClientConfig.GlobalTimeout`, `ClientBuilder.ClientConfig.Daemonize`, and
+    `ClientBuilder.ClientConfig.MonitorFactory` are now private to `com.twitter.finagle.builder`.
+    `ClientBuilder.ClientConfig.Retries` is now private to `com.twitter`. ``RB_ID=727245``
+
+  * finagle-httpx: `Method` no longer has an extractor. To access the name of
+    custom methods, use `toString`. ``RB_ID=722913``
+
+  * finagle-mux: `c.t.f.mux.exp.FailureDetector` and `c.t.f.mux.exp.sessionFailureDetector` are
+    moved out of exp package into mux package. ``RB_ID=725350``
+
+6.27.0
+------
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-http: Support nacks between Finagle Http clients and servers. When a server fails
+    with retryable exceptions (exceptions wrapped by `Failure.rejected`), it sends back a "Nack"
+    response, i.e. 503 Response code with a new "finagle-http-nack" header. This allows clients
+    to safely retry failed requests, and keep connections open. ``RB_ID=705948``
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: FailFast parameter renamed from `onOrOff` to `enabled`. ``RB_ID=720781``
+
+  * finagle-core: When evaluating NameTree unions, return components of the union in Ok state rather
+    than waiting for all components to be Ok. This enables resilience of unions when part of the
+    tree cannot be resolved. ``RB_ID=697114``
+
+  * finagle-stats: Standard of deviation is no longer calculated. It is exported as a constant 0.0
+    for "$statName.stddev". ``RB_ID=717647``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+  * finagle-stream: Introduce StreamRequest as a replacement for Netty's
+    HttpRequest, and converted the rest of the public API to not leak
+    other Netty types (notably ChannelBuffer is replaced by Buf). ``RB_ID=695896``
+
+  * finagle-core: Dtab does not implement the Namer interface anymore. Use
+    `c.t.f.naming.DefaultInterpreter` to bind a name via a Dtab. Support for Dtab entries starting
+    with /#/ has been removed. `c.t.f.Namer.bindAndEval` has been removed. Use
+    `c.t.f.Namer.resolve` instead. ``RB_ID=711681``
+
+  * finagle: `LoadService` and `ThriftRichClient` migrated off of deprecated `ClassManifest`
+    to `ClassTag`. ``RB_ID=720455``
+
+6.26.0
+-------
+
+Deprecations
+~~~~~~~~~~~~
+
+  * finagle-memcached: Deprecated in favor of finagle-memcachedx and now removed.
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-httpx: Support nacks between Finagle Http clients and servers. When a server fails
+    with retryable exceptions (exceptions wrapped by `Failure.rejected`), it sends back a "Nack"
+    response, i.e. 503 Response code with a new "finagle-http-nack" header. This allows clients
+    to safely retry failed requests, and keep connections open. ``RB_ID=670046``
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+  * finagle-core: Moved netty3 specific things into a netty3 namespace. For
+    these symbols, the namespace translation follows this pattern:
+    `c.t.f.$MODULE._ => c.t.f.netty3.$MODULE._.` ``RB_ID=691746``
+
+  * finagle-core: Define `WeightedSocketAddress` as a case class. Add
+    `WeightedSocketAddress.extract` method to extract weight. ``RB_ID=614228``
+
+  * finagle-core: Constructing a new Balancer that can be injected into a Finagle client
+    was unnecessarily complex and non-uniform. We removed the legacy constructors around
+    defining the collection of endpoints and simplified the interface to `LoadBalancerFactory`.
+    Now, `com.twitter.finagle.loadbalancer.Balancers` defines the collection of balancer
+    constructors. ``RB_ID=660730``
+
+  * finagle-core: Aperture can no longer be enabled via command line flags. Configuring
+    per-client settings globally is generally not a good idea and we're working to remove
+    these flags from Finagle. Use the constructors in `com.twitter.finagle.loadbalancer.Balancers`
+    to create an instance that can be injected into a client. ``RB_ID=663194``
+
+  * finagle-core: The default load balancer has changed to p2c from heap. ``RB_ID=693450``
+
+  * finagle-core: `Service.isAvailable` and `ServiceFactory.isAvailable` is finalized.
+    `Service.status` and `ServiceFactory.status` supersedes `isAvailable` usage since 6.24.0 release.
+    ``RB_ID=678588``
+
+  * finagle-core: `ClientBuilder.failureAccrual` method is removed. Use `ClientBuilder.failureAccrualFactory`
+    instead. ``RB_ID=689076``
+
+  * finagle-core: Stack param `ClientBuilder.ClientConfig.FailureAccrualFac` is removed.
+    Use `ClientBuilder.failureAccrualFactory` instead. ``RB_ID=689076``
+
+  * finagle-exception: `com.twitter.finagle.exception.ExceptionReporter` is no longer used
+    as the default `com.twitter.finagle.util.ReporterFactory`. ``RB_ID=674646``
+
+  * finagle-kestrel: Replace deprecated finagle-kestrel package with finagle-kestrelx.
+    ``RB_ID=667920``
+
+  * finagle-core: Add new method `noFailureAccrual` on `ClientBuilder` that completely disables
+    `FailureAccrualFactory` in the underlying stack. ``RB_ID=689076``
+
+New Features
+~~~~~~~~~~~~
+
+- finagle-thrift: Support for finagle Services per thrift method.
+
+6.25.0
+------
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `c.t.f.builder.Server` now implements `c.t.f.ListeningServer`.
+
+  * finagle-core: `c.t.f.Server.serveAndAnnounce` with a `ServiceFactory` had
+    its first argument renamed to `name` from `forum`.
+
+  * finagle-core: Add an attribute map to `c.t.f.Addr.Bound`.
+
+  * finagle-core: `c.t.f.builder.ClientConfig.FailFast` has moved to
+    `c.t.f.FailFastFactory.FailFast`.
+
+  * finagle-core: NoBrokersAvailableException now has two Dtab constructor
+    arguments, both the base and local Dtabs.
+
+  * finagle-core: `c.t.f.Failure` convenience constructors (e.g., `Failure.Cause`,
+    `Failure.Rejected`) were removed in favor of uniform flag treatment, and clean
+    separation of attributes from interpretation of those attributes.
+
+  * finagle-core: `ExitGuard` usage is now private to finagle.
+
+  * finagle-core: `c.t.f.service.TimeoutFilter.module` is now split into
+    `TimeoutFilter.clientModule` and `TimeoutFilter.serverModule`.
+
+  * finagle-core: remove deprecated `c.t.f.builder.ClientBuilder.stack` taking a
+    `Stack.Params => Client[Req1, Rep1]`.
+
+  * finagle-core: StackRegistry.Entry takes different constructor arguments, and the
+    name has been bundled in with the Stack.Params.  StackRegistry.Entry is only used
+    internally, so this should be relatively inexpensive.  Similarly, StackRegister#register
+    has also had a small change to its method signature along the same lines.
+
+  * finagle-http: deprecated methods in `c.t.f.http.HttpMessageProxy` have been removed.
+
+  * finagle-memcached / finagle-memcachedx: move TwitterCacheResolver
+    and related objects to new finagle-cacheresolver package.
+
+  * finagle-memcached / finagle-memcachedx: failureAccrual param in ReplicationClient
+    is changed from type (Int, Duration) to (Int, () => Duration), to allow flexibility
+    to config duration. Also see `markDeadFor` change in finagle-core in the "New Features"
+    section below.
+
+  * finagle-memcached / finagle-memcachedx: MigrationClientTest now uses
+    ServerCnxnFactory from com.twitter.zk rather than NIOServerCnxn.Factory from
+    org.apache.zookeeper.server.
+
+  * finagle-mux: `c.t.f.mux.RequestNackedException` is removed in favor of a standard
+    Failure (`c.t.f.Failure.Rejected`).
+
+  * finagle-ostrich4: Switched dependency to finagle-httpx from finagle-http.
+
+  * finagle-serversets: ZkInstance in tests now uses ServerCnxnFactory from
+    com.twitter.zk rather than NIOServerCnxn.Factory from
+    org.apache.zookeeper.server.
+
+  * finagle-stats: Switched dependency to finagle-httpx from finagle-http.
+
+  * finagle-mysql: PreparedStatements are now more type-safe! The type signature of
+    PreparedStatements has changed from Seq[Any] => Future[Result] to Seq[Parameter] =>
+    Future[Result]. Parameter represents objects that are serializable by finagle-mysql.
+    In most cases, scalac should transparently wrap your arguments in Parameter when
+    applying a PreparedStatement. However, in cases where this doesn't happen you
+    can explicitly wrap them using `Parameter.wrap`.
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `com.twitter.finagle.service.StatsFilter` no longer requires a
+    `com.twitter.finagle.stats.RollupStatsReceiver` for correct behaviour, and
+    providing one will double count failures.
+
+  * finagle-core: `com.twitter.finagle.factory.TimeoutFactory` will fail with
+    a retryable `com.twitter.finagle.Failure` when it times out.
+
+  * finagle-core: `com.twitter.finagle.pool.WatermarkPool` will fail with
+    an interrupted `com.twitter.finagle.Failure` when it is interrupted while
+    waiting or trying to establish a connection.  It has previously failed with
+    a `com.twitter.finagle.WriteException` when trying to establish a
+    connection, but it's incorrect to retry on an interruption.
+
+  * finagle-core: `com.twitter.fiangle.RetryPolicy`'s `RetryableWriteException`
+    and `WriteExceptionsOnly` will not retry on `com.twitter.finagle.Failure`s
+    that are marked `InterruptedBy`, even if they are `Retryable`.
+
+  * finagle-core: The error message provided by `c.t.f.NoBrokersAvailableException`
+    prints both the base and local Dtabs.
+
+  * finagle-core: Stats produced by `com.twitter.finagle.factory.BindingFactory`
+    are now scoped with the "namer" prefix rather than "interpreter". The total
+    latency associated with Name binding is now recorded in the "bind_latency_ms"
+    stat.
+
+  * finagle-core: The "service_creation/service_acquisition_latency_ms" stat
+    produced by `com.twitter.finagle.factory.StatsFactoryWrapper` no longer
+    includes time spent in name resolution, which is now covered by
+    "namer/bind_latency_us" as discussed above.
+
+  * finagle-core: added transit_latency_ms and deadline_budget_ms stats.
+
+  * finagle-core: Automatic retries (requeues) are now credited as a ratio of
+    requests over a window of time, instead of a fixed limit. The stats scope
+    has also changed from "automatic" to "requeues".
+
+Deprecations
+~~~~~~~~~~~~
+
+  * finagle-core: `c.t.f.builder.Server.localAddress` is deprecated in favor of
+    `c.t.f.ListeningServer.boundAddress`.
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: `Fail fast <https://twitter.github.io/finagle/guide/FAQ.html#why-do-clients-see-com-twitter-finagle-failedfastexception-s>`_
+    is now `configurable <https://twitter.github.io/finagle/guide/FAQ.html#configuring-finagle6>`_
+    on Stack-based clients via the `com.twitter.finagle.FailFastFactory.FailFast` param.
+
+  * finagle-core: `com.twitter.finagle.service.StatsFilter` is now configurable with an
+    `com.twitter.finagle.stats.ExceptionStatsHandler` to customize how failures are recorded.
+
+  * finagle-core: It should be safe to match on `com.twitter.finagle.Failure.InterruptedBy`
+    to tell if a `com.twitter.util.Future` failed due to being interrupted.
+
+  * finagle-core: `markDeadFor` in c.t.f.service.FailureAccrualFactory.Param is changed from
+    Duration type to () => Duration. So it's flexible for clients to pass in a function that
+    specifies Duration. For example, c.t.f.service.FailureAccrualFactory provides a function
+    that adds perturbation in durations. Stack-based API and c.t.f.builder.ClientBuilder
+    support both types for client configuration. For example,
+
+    ::
+
+      Thrift.client.configured(FailureAccrualFactory(5, () => 1.seconds))
+      // or
+      Thrift.client.configured(new FailureAccrualFactory(5, 1.seconds)).
+
+    c.t.f.client.DefaultClient does not support Duration type in failureAccrual anymore.
+
+  * finagle-core: improved Java compatiblity for `c.t.f.Stack.Params` / `c.t.f.Stack.Parameterized`.
+
+  * finagle-core: Introduce the ability to add metadata to bound `com.twitter.finagle.Addr`\s.
+
+  * finagle-core: Introduce per-address latency compensation.  Clients may be configured with
+    a 'Compensator' function that uses the client's address metadata to adjust connection and
+    request timeouts.  This can be used, for instance, to account for speed-of-light latency
+    between physical regions.
+
+  * finagle-core: Introduce per-address stats scoping.  Clients may be configured with
+    a `com.twitter.finagle.client.StatsScoping.Scoper` function that uses the client's
+    address metadata to adjust the scope of client stats. This can be used, for instance,
+    to properly scope client stats for a Name that resolves to a Union of distinct clusters.
+
+  * finagle-core: A convenient method `Client.newService(dest: String, label: String)` was added.
+
+  * finagle-core: ExitGuard now has an 'explainGuards' method to provide a human-readable
+    description of exit guards that are still active.
+
+  * finagle-http(x): Two missing params were added: `Decompression` and `CompressionLevel`. Both
+    client and server may be configured with either `configured` method or `withDecompression`/
+    `withCompressionLevel`.
+
+  * finagle-mysql: Add support for MySQL transactions.
+
+  * finagle-stats: A new HostStatsReceiver type is added and used for per host stats.
+    It is loaded through LoadService and used by the Stack-based API as a default
+    param. Per host stats can be turned on through `com.twitter.finagle.loadbalancer.perHostStats`
+    flag, and is exported to the "/admin/per_host_metrics.json" route in twitter-server.
+
+  * finagle-stats: Improved compatibility when migrating from
+    `Ostrich <https://github.com/twitter/ostrich/>`_ stats via two flags:
+    ``com.twitter.finagle.stats.useCounterDeltas=true`` and
+    ``com.twitter.finagle.stats.format=ostrich``. If these flags are both set,
+    HTTP requests to ``/admin/stats.json`` with the ``period=60`` query string
+    parameter will replicate Ostrich's behavior by computing deltas on counters
+    every minute and formatting histograms with the same labels Ostrich uses.
+
+  * finagle-memcached(x): Add `c.t.f.memcached.Memcached` which provides a Stack
+    based Memcache client that uses pipelining.
+
+Bug Fixes
+~~~~~~~~~
+
+  * finagle-core: `c.t.f.Server.serveAndAnnounce` for a `Service` had its usage
+    of `name` and `addr` transposed.
+
+Miscellaneous Cleanup
+~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-protobuf: Move entire unused subproject to the `Finagle
+    organization on GitHub <https://github.com/finagle/finagle-protobuf>`_.
+
+
+6.24.0
+------
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: Remove `c.t.f.client.StackClient.Role.loadBalancer`, which
+    was unused and duplicated by `c.t.f.loadbalancer.LoadBalancerFactory.role`.
+
+  * finagle-core: `c.t.f.Namer.orElse` was removed; composing Namers
+    may be accomplished by constructing an appropriate Dtab.
+
+  * finagle-core: removed experimental `enum` / `expand` from
+    `c.t.f.Namer` and `alt` / `union` from `c.t.f.Dtab`.
+
+  * finagle-http: Remove `c.t.f.http.CheckRequestFilter` along with
+    `c.t.f.http.CheckHttpRequestFilter`. The functionality has been
+    added to `c.t.f.http.codec.HttpServerDispatcher`. In addition,
+    the codecError in `c.t.f.http.BadHttpRequest` has been replaced
+    with the exception thrown by the HttpServerCodec.
+
+  * finagle-httpx: Remove deprecated code, limited scope of access on internal
+    classes.
+
+  * finagle-mux: `c.t.f.mux.lease.exp.WindowedByteCounter` no longer
+    calls `Thread.start()` in its constructor. This should be now be
+    done by the caller.
+
+  * finagle-mux: The experimental session API is discontinued.
+
+  * finagle-mux: Introduce new Request and Response types for mux services.
+    The new mux request includes a `destination` path so that, which corresponds
+    to the `destination` field in Tdispatch requests. Furthermore, these new
+    types expose `c.t.io.Buf` instead of Netty's ChannelBuffers.
+
+  * finagle-thrift,finagle-thriftmux: `c.t.f.Thrift.Client`, `c.t.f.Thrift.Server`,
+    `c.t.f.ThriftMux.Client` and `c.t.f.ThriftMux.Server` have their
+    `TProtocolFactory` configured via a `c.t.f.thrift.param.ProtocolFactory`
+    `Stack.Param`.
+
+  * finagle-thriftmux: `c.t.f.ThriftMux.Client` now has its `ClientId`
+    configured via a `c.t.f.thrift.param.ClientId` `Stack.Param`.
+
+
+  * Traces (``com.twitter.finagle.tracing.Trace``) lose their local-state mutating methods:
+    ``Trace.clear``, ``Trace.pushId``, ``Trace.setId``, ``Trace.setTerminalId``, ``Trace.pushTracer``,
+    ``Trace.pushTracerAndSetNextId``,
+    ``Trace.state_=``, and ``Trace.unwind``.
+    Let-bound versions of these are introduced in their stead.
+    This makes it simple to ensure that state changes are properly delimited;
+    further, these are always guaranteed to be delimited properly by Finagle.
+
+    ::
+
+      Trace.setTracer(tracer)
+      codeThatUsesTracer()
+
+      // Let-bound version:
+      Tracer.letTracer(tracer) {
+        codeThatUsesTracer()
+      }
+
+  * Context handlers (``com.twitter.finagle.Context``) are removed.
+    They are replaced by the use of marshalled request contexts
+    (``com.twitter.finagle.context.Contexts.broadcast``).
+    Marshalled request contexts do not require the use of service loading,
+    so their use no longer requires build system coordination.
+    We show Finagle's trace context:
+    the first version uses the old context handler mechanism;
+    the second uses ``Contexts.broadcast``.
+
+    ::
+
+      // The old context handler for Finagle's tracing context. Note that this
+      // also required the file
+      // finagle-core/src/main/resources/META-INF/services/com.twitter.finagle.ContextHandler
+      // to contain the fully qualifed class path of the below object.
+      class TraceContext extends ContextHandler {
+        val key = Buf.Utf8("com.twitter.finagle.tracing.TraceContext")
+
+        def handle(body: Buf) {
+          // Parse 'body' and mutate the trace state accordingly.
+        }
+
+        def emit(): Option[Buf] = {
+          // Read the trace state and marshal to a Buf.
+        }
+      }
+
+      // New definition. No service loading required.
+      private[finagle] val idCtx = new Contexts.broadcast.Key[TraceId] {
+        val marshalId = Buf.Utf8("com.twitter.finagle.tracing.TraceContext")
+
+        def marshal(id: TraceId): Buf = {
+          // Marshal the given trace Id
+        }
+
+        def tryUnmarshal(body: Buf): Try[TraceId] = {
+          // Try to marshal 'body' into a trace id.
+        }
+      }
+
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-mux: Mark the ServiceFactory available again if the underlying
+    Service is no longer available.  This permits it to be closed and reused.
+
+  * finagle-mux: Rename the "lease_counter" counter to "leased" on mux clients.
+
+Deprecations
+~~~~~~~~~~~~
+
+ * finagle-core: Deprecated the mechanisms of FailureAccrual that use
+   factory Transformers.  It's better to just use the Params to
+   configure the existing FailureAccrualFactory.  However, if you've
+   actually written your own failure accrual transformer that's
+   significantly different, then you can do stack.replace() to swap it
+   in.
+
+ * finagle-memcached: Have cas() operation return false on NotFound()
+   state instead of throw IllegalStateException
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: All `Stack.Param`s used in `ClientBuilder` and
+    `ServerBuilder` are now publicly exposed for configuration
+    parity.
+
+  * finagle-mux: Drain mux servers properly, so that shutdowns can be
+    graceful.
+
+  * finagle-core: Introduce `Service.status` which supersedes
+    `Service.isAvailable`. `Service.status` is a fine-grained
+    health indicator. The default definition of
+    `Service.isAvailable` is now defined in terms of
+    `Service.status`; this definition will soon be made
+    final.
+
+  * finagle-mux: Inject bound residual paths into mux requests.
+
+  * *Request contexts.* Request contexts replace the direct use of
+    com.twitter.util.Local and of com.twitter.finagle.Context.
+    Request contexts are environments of request-local bindings;
+    they are guaranteed to be delimited by Finagle,
+    and their API admits only properly delimited binding.
+    They come in two flavors:
+    Contexts.local are always local to handling a single request;
+    bindings in Contexts.broadcast may be marshalled and transmitted across process
+    boundaries where there is protocol support.
+    Currently, both Thrift and Mux (and thus also ThriftMux)
+    support marshalled contexts.
+    See `com.twitter.finagle.contexts.Context` for more details.
+
+
+6.23.0
+------
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: `c.t.f.Stackable`s maintained state about which parameters were
+    accessed via `get`. This was error prone and violated the assumption that `Stack`s
+    are immutable data structures. We removed this in favor of annotating modules with
+    parameters. The abstract classes for Stackables were also simplified. Now we only have
+    `Module` and `ModuleN` variants which are more convenient for most definitions.
+    Since this is an advanced API, it should not impact standard usage of finagle.
+  * finagle-core: Update ConcurrentRingBuffer to use ClassTag instead of ClassManifest;
+    rename size argument to capacity.
+
+Deprecations
+~~~~~~~~~~~~
+
+  * `ServerBuilder.stack[Req1, Rep1](mk: Stack.Params => Server[Req1, Rep1])` is
+    deprecated in favor of
+    `ServerBuilder.stack[Req1, Rep1](server: Stack.Parameterized[Server[Req1, Rep1]])`
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * `finagle`: Improve allocation semantics for uses of Buf.
+
+6.22.0
+-------
+
+Breaking API Changes
+~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: Removed unused `com.twitter.finagle.service.ProxyService`. It wasn't
+    sufficiently general to be used outside of finagle, and was no longer used
+    in finagle.
+  * Removed TLSEngine, and replaced it with two, TLSClientEngine, and
+    TLSServerEngine, where TLSServerEngine is the same as TLSEngine, and
+    TLSClientEngine takes a SocketAddress instead of (). Additionally,
+    the Netty3TransporterTLSConfig now takes a function SocketAddress => Engine,
+    instead of () => Engine.
+
+New Features
+~~~~~~~~~~~~
+
+  * finagle-core: BroadcastStatsReceiver, introduce specialized implementation
+  * finagle-core: Introduce gauges in SummarizingStatsReceiver
+  * finagle-core: Introduce Transport#copyToWriter
+  * finagle-core: Make base Dtab used in BindingFactory a Stack.Param
+  * finagle-core: Proper decay in experimental ewma load metric
+  * finagle-core: Simplify Stack{Client, Server} and unify around them
+
+
+Runtime Behavior Changes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * finagle-core: Add support for non-URLClassloaders to LoadService
+  * finagle-core: clear locals before entering server dispatch loop
+  * finagle-core: Defer DNS Resolution in InetResolver to FuturePool
+  * finagle-core: for paths starting with /#/, skip rewrites where prefix is /
+  * finagle-core: include name resolution in tracing request span
+  * finagle-core: Properly wrap some IOException into ConnectionFailedException
+  * finagle-core: Scope InetResolver's stats properly
+  * finagle-http: Send "Connection: close" header while dispatcher is closing
+  * finagle-http: Set content length header when appropriate
+  * finagle-memcached: Use interruptible future for the client request readiness
+  * finagle-stats: Add content-type response header to JsonExporter
+  * finagle-thrift: Add back connection_preparation_latency stat in Thrift
+  * finagle-thriftmux: Record protocol as a gauge rather than a counter
+
+Documentation
+~~~~~~~~~~~~~
+
+  * finagle-core: Add Scaladocs for ChannelBufferBuf and BufChannelBuffer
+  * finagle-core: link to the FAQ in FailedFastException
+  * finagle-serversets: Defer DNS resolution for endpoints to InetResolver
+  * finagle-thrift{,mux}: Clarified with* deprecation warning
+  * Fix minor issues and missing code blocks in Finagle documentation
+
+Optimization
+~~~~~~~~~~~~
+
+  * finagle-core: GlobalFlag isn't caching the property value
+  * finagle-core: recursive-descent Path / NameTree / Dentry / Dtab parsers to reduce heap allocation
+
+Bug Fixes
+~~~~~~~~~
+
+  * finagle-core: Fix a deadlock in Contexts
+  * finagle-core: Fix breaking ABI change in SummarizingStatsReceiver
+  * finagle-core: Fix bug in computing array index in SummarizingStatsReceiver
+  * finagle-core: Fix build.properties location for maven builds
+  * finagle-core: Fix synchronization in LeasedFactory
+  * finagle-core: Fix tracing with Stack{Client, Server}
+  * finagle-core: Make FailedFastException an instance variable.
+  * finagle-core: Synchronized access to the Stackable mutable.params map
+  * finagle-http: Fix CookieMap.rewriteCookieHeaders()
+  * finagle-http: Fix the memory leak in HttpClientDispatcher
+  * finagle-mysql: Fix timestamp fractional seconds encoding
+  * finagle-mysql: Properly heed timezone when extracting TimestampValue
+  * mux: clear contexts after receive, not in 'finally' clause
+
+6.21.0
+------
+
+- `finagle`: Upgrade to scala_2.10
+- `finagle-core`: Add weighted address support to InetResolver.
+- `finagle-core`: Adds ClientRegistry.expAllRegisteredClientsResolved
+- `finagle-core`: Attach Dtab.local to NoBrokersAvailableException in filter
+- `finagle-core`: Attempt to add dtab stats to all clients and servers
+- `finagle-core`: Avoid SOCKS proxy for both loopback and link-local addresses
+- `finagle-core`: Bind names lazily under Alt so we don't do needless lookups
+- `finagle-core`: DelayedFactory to detachable implementation
+- `finagle-core`: Fix a race in load balancer initialization
+- `finagle-core`: Improve loadbalancer logging
+- `finagle-core`: Introduce ewma load metric
+- `finagle-core`: Log state for ewma load metric
+- `finagle-core`: Redesign of twitter-server admin page
+- `finagle-core`: Register StackClient with Path dest in ClientRegistry as evaluated against Dtab.base Problem
+- `finagle-core`: Rewrote ServiceLoader to avoid creating
+- `finagle-core`: SingletonPool: a single-service pool with good semantics
+- `finagle-core`: Zipkin tracing for name resolution
+- `finagle-core`: fix synchronization in SummarizingStatsReceiver
+- `finagle-core`: reusing pool: isAvailable === underlying.isAvailable
+- `finagle-docs`: A better picture for filters. (Replaces hand-drawn monstrosity.)
+- `finagle-docs`: Add Scaladocs for all public exception classes in Finagle.
+- `finagle-docs`: Add a section to the FAQ regarding FailedFastExceptions
+- `finagle-exp`: Generify the DarkTrafficFilter problem
+- `finagle-guide`: Document stabilizing serverset metrics.
+- `finagle-http`: Add support for a Dtab-Local header
+- `finagle-http`: Fail requests with invalid X-Dtab headers
+- `finagle-http`: Fail requests with invalid X-Dtab headers
+- `finagle-http`: TextualContentCompressor should compress textual Content-Type's even when containing a charset
+- `finagle-mux`,thriftmux: explain why the files are named Netty3
+- `finagle-mux`: Better gc avoidance flags for experimentation
+- `finagle-mux`: Enable gc avoidance for parallel gc
+- `finagle-mux`: Improve mux's handling of client disconnects
+- `finagle-mux`: Improved Garbage Collection Avoidance Docs
+- `finagle-mux`: docs and minor cleansing in Message subclasses
+- `finagle-mysql`: Switches PreparedCache over to util-cache FutureCache
+- `finagle-serversets`: Add support for getEphemerals ZooKeeper call
+- `finagle-serversets`: Memoize getChildrenWatchOp instead of globPrefixWatchOp
+- `finagle-serversets`: Reuse ObjectMapper in JSON parser.
+- `finagle-serversets`: add latency metrics for ServerSet2.
+- `finagle-zipkin`: Reduce allocations when tracing
+
+6.20.0
+-------
+
+- `finagle`: Smattering of minor cleanups in util and finagle
+- `finagle`: Upgrade sbt to 0.13
+- `finagle`: Upgrade to Netty 3.9.1.1.Final
+- `finagle-core`: Add NameTree.Fail to permit failing a name without fallback
+- `finagle-core`: Add a generic DtabStatsFilter
+- `finagle-core`: Add a singleton exception and a counter in WatermarkPool
+- `finagle-core`: DefaultClient in terms of StackClient
+- `finagle-core`: Disable Netty's thread renaming
+- `finagle-core`: Fix CumulativeGauge memory leak
+- `finagle-core`: Fix negative resolution in Namer.global
+- `finagle-core`: Fixed ChannelStatsHandler to properly filter exceptions
+- `finagle-core`: Forces finagle-core to use ipv4 network stack
+- `finagle-core`: Improve `Failure.toString`
+- `finagle-core`: Include path and Dtab.local in NoBrokersAvailableException
+- `finagle-core`: Log exceptions caught by ChannelStatsHandler
+- `finagle-core`: Make timer-based DNS resolution as default of InetResolver
+- `finagle-core`: Reader and getContent symmetry
+- `finagle-core`: Reduces log level for common exceptions
+- `finagle-core`: Register clients centrally
+- `finagle-doc`: Add fintop to companion projects list on Finagle website
+- `finagle-http`: Don't emit (illegal) newlines in lengthy dtab header values
+- `finagle-http`: Fix code style from an open-source contribution
+- `finagle-http`: Migrate from specs to scalatest
+- `finagle-kestrel`: Make transaction abort timeout configurable in MultiReader
+- `finagle-mux`: Added extra client logging
+- `finagle-mux`: Fix broken draining behavior
+- `finagle-mux`: Improve granularity of rate to bytes/millisecond
+- `finagle-serversets`: Handle errors that occur when fetching endpoints
+- `finagle-serversets`: Increase ZK session timeout to 10 seconds
+- `finagle-serversets`: Merge WeightedSocketAddresses with same host:port but different weight in Stabilizer
+- `finagle-serversets`: Synchronize bug fixes & test coverage across ZK facades
+- `finagle-swift`: Fixes pants build warning
+- `finagle-thrift`: Add explicit dependency on libthrift
+- `finagle-thrift`: Remove usage of java_sources, should be able to depend on it normally
+
+6.19.0
+-------
+
+- `finagle-core`: Allow trailing semicolons in dtabs
+- `finagle-core`: Rescue exceptions thrown by filter in `Filter.andthen(Filter)`
+- `finagle-core`: StackClient, StackClientLike don't leak underlying In, Out types
+- `finagle-doc`: Clarify cancellation
+- `finagle-doc`: Fix broken link in document
+- `finagle-doc`: Fix name footnote in finagle Names docs
+- `finagle-http`: Buf, Reader remove Buf.Eof; end-of-stream is None
+- `finagle-http`: Prepend comment to JSONP callbacks
+- `finagle-http`: Removing specs from the CookieMapSpec test.
+- `finagle-kestrel`: Make failFast configurable in Kestrel codec
+- `finagle-mysql`: Ensure mysql specific tracing is composed.
+- `finagle-mysql`: Finagle MySQL PreparedStatement accepts Value types as params.
+- `finagle-serversets`: Identity Providers for Serverset2
+- `finagle-thriftmux`: Add withProtocolFactory API endpoint
+- `finagle-thriftmux`: Don't reuse InMemoryStatsReceiver in the same test
+
+6.18.0
+-------
+
+- `finagle-*`: release scrooge v3.16.0
+- `finagle-*`: release util v6.18.0
+- `finagle-core`: Add `description` field to com.twitter.finagle.Stackable trait
+- `finagle-core`: Add a Flag to turn on per-host stats
+- `finagle-core`: Add a service acquisition latency stat to StatsFactoryWrapper
+- `finagle-core`: Don't support empty path elements in com.twitter.finagle.Path
+- `finagle-core`: Improves FailFastFactory documentation
+- `finagle-core`: Make c.t.f.Failure a direct subclass of Exception
+- `finagle-core`: Skip SOCKS proxy when connecting to loopback address
+- `finagle-core`: Use Monitor from caller's context in DefaultTimer
+- `finagle-http`: Add "Enhance Your Calm" and "Too Many Requests" HTTP status codes
+- `finagle-http`: Add exp.HttpServer, which allows request limits to be configured
+- `finagle-http`: Change Request#params to a memoized def
+- `finagle-http`: Stream request body
+- `finagle-kestrel`: Add Name-based methods for MultiReader construction
+- `finagle-memcached`: Expose the client type `KetamaClient` in the `build()` API
+- `finagle-mux`: GC Avoidance Algorithm
+- `finagle-mux`: Hook up GC avoidance to servers
+- `finagle-mux`: Move UseMux.java to the correct directory
+- `finagle-serversets`: Randomizes backoff interval in ZK2
+- `finagle-serversets`: Start resolution eagerly in ZK2
+- `finagle-stats`: Add a stat-filtration GlobalFlag
+- `ostrich`: release ostrich v9.5.2
+- `user guide`: Add Google Analytics tracking code
+- `user guide`: Add sections about review process and starter issues
+- `user guide`: Update Finagle adopter list on user guide website
+- `wily`: Add Dtab expansion
+
+6.17.0
+-------
+
+- `finagle`: Add list of Finagle adopters
+- `finagle`: Upgrade third-party dependencies
+- `finagle-core`: Add `Addr.Neg` to the user guide's list of Addr types
+- `finagle-core`: Added Failure support for sourcing to finagle
+- `finagle-core`: ClientBuilder should turn per-host stats off by default (matching new Client building API).
+- `finagle-core`: Implement DefaultServer in terms of StackServer
+- `finagle-core`: Improve the Dtab API
+- `finagle-core`: Prevent scoping stats with the empty-string
+- `finagle-core`: Rolls up the /tries scope properly
+- `finagle-core`: ServerStatsReceiver and ClientStatsReceiver can now update their root scope
+- `finagle-core`: fix race case in DelayedFactory
+- `finagle-core`: introduce AbstractResolver
+- `finagle-core`: remove need for hostConnectionLimit when using ClientBuilder#stack
+- `finagle-core`: widen to type for ServerBuilder#stack
+- `finagle-core`: widen type of ClientBuilder#stack
+- `finagle-doc`: Removed a line from conf.py
+- `finagle-http`: DtabFilter should always clear dtab headers
+- `finagle-http`: add HOST header for CONNECT method
+- `finagle-http`: scala 2.10 compatible tests
+- `finagle-memcached`: filter out one more cancelling request exception in failure accrual
+- `finagle-memcached`: remove empty test
+- `finagle-mux`: Improve Mux server close behavior, control messages to non-Mux clients
+- `finagle-mux`: Marked a gc test as flaky
+- `finagle-mux`: Modifies MuxService to essentially be a Service[Spool[Buf], Spool[Buf]] Problem
+- `finagle-mux`: Rm ClientHangupException in favor of CancelledRequestException
+- `finagle-mysql`: Retrieving a timestamp from the DB nw creates a timestamp in UTC
+- `finagle-mysql`: fix for issue where time was not being returned in UTC for binary protocol
+- `finagle-serversets`: Prevent gauges from being garbage collected
+- `finagle-thrift`: Blackhole control messages sent to non-mux Thrift clients
+- `finagle-thriftmux`: Add per-connection protocol-usage stats
+- `finagle-thriftmux`: Add stats to identify ThriftMux clients and servers
+- `finagle-thriftmux`: Propagate Contexts from non-ThriftMux clients
+- `finagle-thriftmux`: add ClientBuilder#stack compatibility and make APIs symmetric
+- `finagle-thriftmux`: pass along ClientId with ClientBuilder API
+
+6.16.0
+-------
+
+- `finagle-core`: Add Stack#remove
+- `finagle-core`: Add a copy constructor to Stack{Client, Server}
+- `finagle-core`: Fixed a typo in scaladoc https://github.com/twitter/finagle/pull/264
+- `finagle-core`: Implement ClientBuilder in terms of StackClient
+- `finagle-core`: Invert the `cancelOnHangup` value passed to MaskCancelFilter.Param
+- `finagle-core`: Liberate Failure
+- `finagle-core`: Log all services loaded by c.t.finagle.util.LoadService
+- `finagle-core`: Minor c.t.app.ClassPath/c.t.f.util.LoadService cleanup
+- `finagle-core`: Properly close sockets on shutdown
+- `finagle-core`: Properly scope stats by label in Stack{Client,Server}
+- `finagle-core`: Remove `Stack{Server,Client}.transformed`
+- `finagle-core`: Scoped the RollupStatsReceiver carefully
+- `finagle-core`: Thread through Codec#newClientTransport in ClientBuilder
+- `finagle-core`: Update to netty-3.9.1.Final
+- `finagle-example`: Add Java Thrift client and server
+- `finagle-http`: Add Csv,Xls,Zip to finagle MediaType
+- `finagle-http`: Adds tls support to finagle 6 apis
+- `finagle-http`: Set the response content-length header to 0 in ExceptionFilter.
+- `finagle-kestrel`: Add Thrift support to Kestrel MultiReader in Finagle-Kestrel
+- `finagle-mux`: Cleaned up build information
+- `finagle-mux`: GC Avoidance primitives
+- `finagle-mux`: Move exp.MuxClient and exp.MuxServer
+- `finagle-mux`: Record tracing info when Mux is enabled
+- `finagle-mux`: Refactor Session to make closing a Session uniform
+- `finagle-mux`: Render mux clients leasable
+- `finagle-redis`: Added support for redis MOVE command.
+- `finagle-serversets`: Reduce the number of intermediate datastructures
+- `finagle-thriftmux`: Add ThriftMux.withClientId
+- `finagle-thriftmux`: Maintain legacy client and server names
+- `finagle-{core,thrift,mux}`: Clean up contexts, delimit Locals
+
+6.15.0
+-------
+
+- `finagle-core`: Fixed DefaultClient to use the base close method
+- `finagle-core`: Fix a race condition when closing in DefaultServer
+- `finagle-serversets`: memoize path parses in ServerSet2
+- `finagle-mux`: remove references to org.jboss.netty.util.CharsetUtil
+- `finagle-http`: create HttpTransport in codec
+- `finagle-http`: fix basic authentication with special characters
+- `finagle-http`: temporary fix for prematurely expiring streaming responses
+- `finagle-core`: don't discard outstanding readq elements in ChannelTransport
+- `finagle-core`: Add Socks Proxy Authentication support
+- `finagle-doc`: fix image size in client stack figure.
+- `finagle-stats`: unregister cumulative gauges when all references have been collected
+- `finagle-core`: fix truncation in ChannelBufferBuf#slice()
+- `finagle-stats`: upgrade to the latest version of metrics
+- `finagle-stats`: Enable cumulative gauges in MetricsStatsReceiver
+- `finagle-mysql`: Move mysql testing out of finagle-mysql
+- `finagle-serversets`: serverset namer - synthesize nodes for each endpoint
+- `finagle-http`: fix HttpClientDispatcher
+- `finagle-core`: transport should be considered closed if it is failed
+- `finagle-core`: Improve the failure for cancelled requests in the ClientDispatcher
+- `finagle-core`: LocalScheduler - add LIFO option
+- `finagle-core`: don't join after interrupt in Exitguard.Unguard()
+- `finagle-serversets`: Replaces Op with Activity Problem
+- `finagle-mysql`: implement builder using StackClient.
+- `finagle-core`: Make LoadService not fail if a sub-dir is not readable
+- `finagle-core`: Make com.twitter.finagle.Name an ADT
+- `finagle-core`: curry `newDispatcher` in Stack{Client, Server}
+- `finagle-thriftmux`: Add a flag for enabling ThriftMux
+- `finagle-doc`: improved rastering of logos
+- `finagle-core`: Retry on com.twitter.util.TimeoutException
+- `finagle-core`: introduce ForkJoinScheduler
+- `finagle-serversets`: facade for ZooKeeper libraries
+
+6.14.0
+-------
+
+- `finagle-*`: Add com.twitter.io.Charsets and replace the use of org.jboss.netty.util.CharsetUtil
+- `finagle-benchmark`: Fix caliper failures due to new guava
+- `finagle-core`: Disable Monitor usage of in Netty3Listener
+- `finagle-core`: Enforce usage of c.t.finagle.util.DefaultLogger
+- `finagle-core`: Fix a Netty3Timer capitalization bug
+- `finagle-core`: Fixed unresolved promises in client dispatcher
+- `finagle-core`: Implement ServerBuilder in terms of StackServer.
+- `finagle-core`: Introduce 2-level caching in the name interpreter
+- `finagle-core`: Introduce Failure interface (internally)
+- `finagle-core`: Introduce StackServer
+- `finagle-core`: Introduce a flag for debug tracing
+- `finagle-core`: Make StackClient symmetric to StackServer
+- `finagle-core`: Parse names into trees; introduce separate evaluation.
+- `finagle-core`: Remove redundant Netty3Timer param def
+- `finagle-core`: Resolver.resolve throws IllegalArgumentException on logical name
+- `finagle-core`: RetryPolicy filter, limit, combine
+- `finagle-core`: Thread through NullReporterFactory in ServerBuilder.
+- `finagle-core`: Use DefaultLoadBalancerFactory
+- `finagle-core`: Use JDK6-friendly RuntimeException constructor in Failure
+- `finagle-doc`: README refresh
+- `finagle-doc`: Refresh client stack docs
+- `finagle-memcached`: Ketama memcache: accept weighted addresses
+- `finagle-mux`: Add server-side Stack wiring for Mux and ThriftMux
+- `finagle-mysql`: Proper prepared statement support.
+- `finagle-serversets`: Add Read-Only ZK support to zk2 Resolver
+- `finagle-serversets`: Zk2: deliver events serially in their own thread
+- `finagle-thrift`: workaround libthrift TBinaryProtocol.writeBinary bug
+- `finagle-zipkin`: Include service name in all traces
+
+6.13.1
+------
+
+- `finagle-core`: Case insensitive Dtab headers in HTTP codec
+- `finagle-core`: Introduce Stack.Params#contains
+- `finagle-docs`: address small style nits
+- `finagle-http`: support reading params in content body for HTTP methods other than POST and PUT
+- `finagle-memcached`: add ketamaclient initial readiness before the first request
+- `finagle-serversets`: Disable retry behavior but turn exception into negative resolution.
+- `finagle-serversets`: Stabilizer: don't consider Pending update successful
+- `finagle-stats`: use java.lang.Double in addGauge()
+- `finagle`: Add `cause` Throwables for all ConnectionFailedExceptions
+- `finagle`: Fix Travis-CI integration.
+- `finagle`: Swap Stack.Node and Stack.Leaf args in toString formatting
+- `finagle`: Update 3rdparty library versions
+- `finagle`: Upgrade birdcage to guava 16
+- `finagle`: upgrade ostrich to 9.4.2
+- `finagle`: upgrade util to 6.13.2
+
+6.13.0
+------
+
+- `finagle-core`: ForkJoin scheduler: first draft
+- `finagle-doc`: Update URL to Finagle blog post. Motivation: Outdated URL
+- `finagle-http`: compress text-like content-types by default
+- `finagle-memcached`: Mark test "not migrating yet" as flaky
+- `finagle-mux`: don't delegate empty dtabs
+- `finagle-mysql`: Better failure handling for the dispatcher
+- `finagle-ostrich4`: Make OstrichExporter compatible with Ostrich CommandHandler.
+- `finagle-redis`: Add SINTER command to redis client
+- `finagle-redis`: Allow an empty string as a hash field value
+- `finagle-redis`: Fixed the empty string issue of MBULK_REPLY
+- `finagle-serverset`: ServerSets2: reset value on SyncConnected
+- `finagle-stats`: Upgrade metrics dependency to the latest version.
+- `finagle-thrift`: Do not rely on ThreadLocal'd ClientIds in TTwitterFilter
+- `finagle-thrift[mux]`: Reintroduce ClientIdContext by default
+- `finagle-zipkin`: TraceId invariance
+- `finagle/S2`: introduce address stabilization, stats
+- `finagle`: Add Mux and ThriftMux Clients based on com.twitter.finagle.Stack
+- `finagle`: fix dependency problem with multiple version of serversets
+- `finagle`: Fix the sbt doc generation (and tests)
+- `finagle`: upgrade Netty to 3.8.1
+- `finagle`: upgrade ostrich to version 9.4.0
+- `finagle`: upgrade util to version 6.13.0
+
+6.12.2
+------
+
+- `finagle`: release scrooge version 3.12.3
+- `finagle-exception`: Drop scrooge in favor of pre-generated Thrift Java source code.
+- `finagle-zipkin`: Drop scrooge in favor of pre-generated Thrift Java source code.
+
+6.12.1
+------
+
+- `finagle`: release ostrich version 9.3.1
+- `finagle`: release util version 6.12.1
+- `finagle`: Upgrade everyone to the new c.t.common.server-set
+
+6.12.0
+------
+
+- `finagle-core`: Add a `ServerBuilder.safeBuild(ServiceFactory)` method for Java compatibility
+- `finagle-core`: Add basic Scaladocs for all Filters and Services
+- `finagle-core`: close Name Var observation on service close
+- `finagle-core`: com.twitter.finagle.Stack: initial version
+- `finagle-core`: Fix race condition in server dispatcher draining state machine
+- `finagle-core`: low hanging fruit
+- `finagle-core`: Make `Resolver.evalLabeled` private[finagle]
+- `finagle-core`: Option to enable thread pool scheduler in finagle"
+- `finagle-core`: Record Finagle version in tracing information
+- `finagle-core`: Remove a long-forgotten java file
+- `finagle-core`: Separate stats scopes for service-creation and request failure
+- `finagle-core`: TimeoutFactorySpec => TimeoutFactoryTest
+- `finagle-core`: Users don't get NPE on directories without permissions
+- `finagle-core`: Weights, weighted load balancer, memoization
+- `finagle-core`: Write `Throwables.mkString` in terms of ArrayBuffer instead of Seq
+- `finagle-doc`: How do I change my timeouts in the Finagle 6 APIs?
+- `finagle-example`: Port finagle-example thrift to new style APIs
+- `finagle-http`: Add Dtab filter in RichHttp
+- `finagle-http`: enable tracing on finagle 6 http api
+- `finagle-kestrel`: Fix match-exhaustiveness issue in `DecodingToResponse.parseResponse`
+- `finagle-kestrel`: Use Var[Addr] as underlying cluster representation
+- `finagle-memcache`: Add a parameter to disable host ejection from KetamaFailureAccrualFilter
+- `finagle-memcached`: include response type for IllegalStateException
+- `finagle-mux`: Adds lease support to mux clients
+- `finagle-mysql`: Embeddable MySql support for Unit/Integration Testing in Finagle-MySql
+- `finagle-serversets`: prevent MatchError when resolving zk path + endpoint
+- `finagle-serversets`: Use ephemeral ports and `Var.sample` in tests
+- `finagle-serversets`: Use the watch method instead of the now deprecated monitor method
+- `finagle-tracing` /zipkin: remove some allocations
+- `finagle`: update dependencies com.twitter.common*
+- `finagle`: update ostrich to 9.3.0
+- `finagle`: update util to 6.12.0
+- `finagle`: Use a more descriptive message for when client name resolution is negative
+
+6.11.1
+------
+
+- `finagle-core`: Masks cancellation on PipeliningDispatcher
+- `finagle-doc`: Fix finagle-websocket link on Finagle docs website.
+- `finagle-http`: Http client dispatcher
+- `finagle-kestrel`: Add abort command to kestrel client
+
+6.11.0
+------
+
+- `finagle-core`: Add a "tries" scoped StatsFilter to ClientBuilder.
+- `finagle-core`: Allow clean shutdown for insoluble address in DelayedFactory.
+- `finagle-core`: Better exception message for resolver not found issue.
+- `finagle-core`: Introduce P2CLB: O(1), fair-weighted, concurrent load balancer
+- `finagle-core`: Refactor dispatchers.
+- `finagle-core`: Set interest ops when reading in ChannelTransport.
+- `finagle-core`: Skip hostStatsReceiver rollup if it's null in DefaultClient.
+- `finagle-core`: Untyped ChannelTransports.
+- `finagle-example`: Use new `request.headers()` Netty API.
+- `finagle-http`: Proper streaming dispatch.
+- `finagle-kestrel`: Make ReadHandle an abstract class for better Java compatibility.
+- `finagle-serversets`: Fix com.twitter.common.zookeeper.server-set dependency discrepancy.
+- `finagle-serversets`: Introduce ServerSet2.
+- `finagle-serversets`: Weight/priority vectors in ServerSet2.
+- `finagle-stream`: Use dispatch logic.
+- `finagle-stress`: Use BridgedThreadPoolScheduler.
+- `finagle-thrift`: Add TFinagleBinaryProtocol
+- `finagle-thriftmux`: Drop dependency on finagle-ostrich4.
+- `finagle-thriftmux`: Remove scrooge2 dependency.
+- `finagle`: Use Future.before.
+- `finagle`: adds a section to the FAQ explaining the com.twitter.common situation.
+- `finagle`: s/setValue(())/setDone()/g
+
+6.10.0
+------
+
+- `finagle-core`: Fix ServiceTimeoutException naming.
+- `finagle-core`: Increase default tcpConnectTimeout to 350ms.
+- `finagle-core`: Remove memory leak for never satisfied promises in DelayedFactory.
+- `finagle-memcached`: Add ClientBuilder APIs that use Name instead of Group.
+- `finagle`: Daemonize threads in ClientBuilders used in finagle.
+
+6.9.0
+-----
+
+- `finagle-core`: Avoid creating a new 'NoStacktrace' array for each exception.
+- `finagle-core`: Better support for negative Addr resolution in StabilizingAddr.
+- `finagle-core`: Make Dtab.base changeable.
+- `finagle-core`: Move mask cancel filter over to Future#mask.
+- `finagle-exp`: New warmup filter.
+- `finagle-ostrich4`: Deprecate Netty methods.
+- `finagle-serversets`: Better handling of permission exceptions in ZkResolver.
+- `finagle-testers`: Small latency evaluation framework.
+- `finagle`: Adhere to scala 2.10 pattern matching strictness.
+
+6.8.1
+-----
+
+- `finagle`: Upgrade ostrich to 9.2.1
+- `finagle`: Upgarde util to 6.8.1
+- `finagle`: Upgarde scrooge to 3.11.1
+
+6.8.0
+-----
+
+- `finagle-serversets`: Higher fidelity addrs from ZK We do the best we can with the current server set implementation.
+- `finagle-mysql`: better type support
+- `finagle-http`: Allow Integer to extract negative number
+- `finagle-redis`: Decode nested multi-bulk replies
+- `finagle-redis`: Allow expirations in the past
+- `finagle-core`: bump Netty to 3.8.0.Final
+- `finagle`: Return empty string when resolving an unlabeled address
+- `finagle`: Don't re-scope StatsReceivers per request failure
+- `finagle-thrift`: Unconditionally set TraceId and ClientId on servers
+- `finagle-core`: Take -com.twitter.server.serversetZkHosts flag (for tunnelling)
+- `finagle-native`: tomcat-native-1.1.27
+- `finagle-mysql`: fix readLengthCodedBinary to read longs
+- `finagle-testers`: library for integration testing of finagle services
+- `finagle`: scaladoc warning cleanup
+- `finagle-doc`: documented all of the stats in finagle-core
+- `finagle-serversets`: bump server-set dependency to 1.0.56
+- `finagle-stats`: adds a cautious registration to HttpMuxer / adds a default metrics endpoint to twitter-server
+- `finagle-core`: verifies that statsfilter has the correct behavior
+- `finagle-serversets`: Add support for parsing a !shardId on the end of a serverset address
+- `finagle-http`: Use Reader for streaming
+- `finagle-core`: no longer makes an anonymous exception in DefaultClient
+- `finagle-core`: Using system class loader does not work when run inside sbt
+- `finagle-core`: add pool_num_waited counter to WatermarkPool
+- `finagle-core`: Protocol support for Wily: HTTP, thrift, mux (& thus thriftmux).
+- `finagle-core`: respect standard socksProxyHost / socksProxyPort properties in ClientBuilder and Netty3Transporter default args
+- `finagle-core`: buffers requests until Var[Addr] is in a ready state
+- `finagle-core`: Add putLong and getLong functions to util.ByteArrays
+- `finagle-core`: don't blow up if we don't have a resolvable host name
+- `finagle-core`: rm allocation in RichChannelFuture.apply's operationComplete
+- `finagle-core`: remove Var.apply; introduce Var.sample
+- `finagle-thriftmux`: Support ClientIds at the protocol level
+- `finagle-kestrel`: memory allocation improvements
+- `finagle-http`: allow PUT requests to use RequestParamMap.postParams
+- `finagle-memcached`: more performance and less allocations in Decoder
+
+6.7.4
+-----
+
+- `finagle-core`: Fail ChannelTransport read queue before closing the connection
+- `finagle-mux`: Add session for mux message passing and bidirectional RPC
+- `finagle-zipkin`: Depend on scrooge-core instead of scrooge-runtime
+
+6.7.2
+-----
+
+- `finagle-core`: LoadService: skip empty lines
+- `finagle-core`: Improve GC profile of Var and Group
+- `finagle-core`: added a simple defaultpool test to show how it works + more docs
+- `finagle-core`: removes commented out casting filter
+- `finagle-mysql`: move protocol into a dispatcher and port to new style apis.
+
+6.7.1
+-----
+
+- `finagle-*`: Tagging various tests as flaky
+- `finagle-*`: Fix and reenable some formerly-flaky tests Now that Time.withXXXX is threadsafe
+- `finagle-*`: Move Var to util
+- `finagle-*`: Provide generic request contexts
+- `finagle-*`: Use scrooge3 and up-to-date scrooge-maven-plugin settings
+- `finagle-*`: upgrade Netty to 3.7.0.Final
+- `finagle-core`: Add UnwritableChannel stat to ChannelStatsHandler
+- `finagle-core`: Add a test for Proc exception-swallowing
+- `finagle-core`: Better interface for RetryPolicy
+- `finagle-core`: Ensure FIFO ordering when delivering updates to StabilizingGroup
+- `finagle-core`: Export a health stat in StabilizingGroup
+- `finagle-core`: Fix a race condition in ListeningSever.announce and don't announce 0.0.0.0
+- `finagle-core`: Fix sourcing for SourcedExceptions
+- `finagle-core`: Group: communicate via Var[Set[T]]
+- `finagle-core`: Improve HeapBalancer req distribution when N=2
+- `finagle-core`: Introduce staged names
+- `finagle-core`: Let the number of cores be specified on the command line
+- `finagle-core`: Make socket writable duration stats more useful
+- `finagle-core`: Migrate RetryingFilter tests from specs to scalatest
+- `finagle-core`: Move the connections gauge into ChannelStatsHandler for GC
+- `finagle-core`: Reuse a single exception instance in ServerDispatcher
+- `finagle-core`: Update com.twitter.finagle package documentation
+- `finagle-doc`: Add Client/Server Anatomy to docs
+- `finagle-doc`: Link to "Your Server as a Function"
+- `finagle-http`: Proper CORS implementation on Finagle
+- `finagle-http`: SPNEGO http auth (for Kerberos) with an example implementation for internal services
+- `finagle-memcached`: Exclude CancelledRequestException and CancelledConectionException or cache client failure accrual
+- `finagle-memcached`: Read key remapping config from ZooKeeper
+- `finagle-memcached`: ZK based cache node group implementation
+- `finagle-redis`: SRandMember, send command without count when None
+- `finagle-serversets`: Mark ZookeeperServerSetCluster as deprecated
+- `finagle-thrift`: Add a request context for ClientId
+- `finagle-thrift`: Set the client id in thriftmux
+
+6.7.0
+-----
+
+Release process failed. Rolled forward to 6.7.1.
+
+6.6.2
+-----
+
+- `finagle-core`: Configurable loadBalancer for ClientConfig
+- `finagle-core`: Fix the memory leak due to the GlobalStatsReceiver
+- `finagle-core`: Inet util, bind to all if no host is provided
+- `finagle-core`: Make Future.never a val instead of a def
+- `finagle-memcached`: Fix tracing ClientRecv timestamp
+- `finagle`: New ostrich version
+
+6.6.0
+-----
+
+- `finagle-core`: Add a RetryPolicy constant for retrying on ChannelClosedExceptions.
+- `finagle-core`: ChannelSnooper: Print exceptions via Logger
+- `finagle-core`: Finagle client/server APIs: s/target/addr/g
+- `finagle-core`: Introduce swappable schedulers, ThreadPool scheduler.
+- `finagle-core`: Replacing ostrich-specific Stats with StatsReceiver interface
+- `finagle-core`: Tests for BroadcastStatsReceiver
+- `finagle-core`: adding service name to a service exception
+- `finagle-core`: fix file mispelling for StabilizingGroup.scala
+- `finagle-core`: fix memory leak in Group#fromCluster
+- `finagle-core`: refactor use of InetSocketAddress group and deprecate use of cluster in cache client
+- `finagle-http`: Add Access-Control-Expose-Headers to Finagle CORSFilter
+- `finagle-http`: Fix Path comments, improve sbt definition
+- `finagle-http`: Http connection manager: close synchronously
+- `finagle-http`: Make behavior of HttpMuxer match its javadoc
+- `finagle-http`: Mix in Proxy with HttpMessageProxy
+- `finagle-http`: bump request/response sizes to 5 megs
+- `finagle-memcached`: Memcached Ketama Client Builder: Add group support that is compatible with oldlibmemcached , creates CacheNodes with ipAddress instead of hostname.
+- `finagle-memcached`: Update jackson to 2.2.2
+- `finagle-memcached`: allow custom key in ketama client
+- `finagle-memcached`: better exception messages for invalid keys
+- `finagle-memcached`: migration client
+- `finagle-ostrich4`: improve perf of Counter and Stat
+- `finagle-swift`: experimental swift-based thrift server and client An experimental annotation based proxy and dispatcher for thrift, using Facebook???s swift for serialization.
+- `finagle-thrift`: breaking out finagle, higher-kinded-type interface
+- `finagle-thrift`: fix finagle-thrift rich to work with scrooge 3.6.0
+- `finagle-thrift`: move scrooge-runtime to scrooge
+- `finagle-thrift`: remove use of deprecated generated ostrich ThriftServer
+- `finagle-zipkin`: Add newlines to scribe message
+- `finagle-zipkin`: Use better metric names for error stats
+- `finagle-zipkin`: optimize scribe logging to not need slf4j
+
+6.5.2
+-----
+
+- finagle-ostrich4: set stats export URI to stats.json
+- finagle-core: Introduce StabilizingGroup which cautiously removes items from a Group
+- finagle-core: Add group method to ClientBuilder
+- finagle-core: Add service/client name to ServiceTimeoutException
+- finagle-mux: Don't allocate headers via direct buffers
+- finagle-http: Implement missing modifiers in Http case class
+- finagle-memcache: added support for twemcache commands
+
+6.5.1
+-----
+
+- `finagle-http`: Move routing by path and method function to RoutingService
+- `finagle-redis`: Switching from Strings to ChannelBuffers for Scored Zrange commands
+- `finagle-stats`: Upgrade metrics to 0.0.9
+- `finagle-stream`: Revert "Stream interface (i.e. chunked) for HTTP message bodies"
+- `finagle`: Fix documentation about Java & Future
+- `finagle`: Refresh OWNERS/GROUPS in all subdirectories
+- `finagle`: Upgrade Netty version to 3.6.6.Final
+- `finagle`: Upgrade ostrich version to 9.1.2
+- `finagle`: Upgrade util version to 6.3.7
+- `finagle-redis`: Implement new SET syntax introduced in redis 2.6.12
+- `finagle-core`: Open connection threshold et al
+
+6.5.0
+-----
+
+- `finagle-core`: fix a bug in Trace.unwind in ruby
+- `finagle-core`: speed up tracing when a trace is unsampled.
+- `finagle-redis`: implement PEXPIRE/PEXPIREAT/PTTL
+- `finagle-redis`: Make the multiple argument version of zAdd a separate method.
+- `finagle-serverset`: create a ZkAnnouncer
+- `finagle-thriftmux`: make thriftmux server back compatible with thrift framed codec
+- `finagle-zipkin`: Performance improvement for finagle-zipkin
+- `finagle`: Gizzard: Some followup deps alignment to fix deployment classpath issues
+- `finagle-memcached`: KetamaClient based on finagle-6 API
+- `finagle-exception`: unique namespace for scribe
+- `finagle-thrift`: Add scrooge3 support
+- `finagle`: bump sbt util/finagle version
+- `finagle`: Updating owner list
+- `finagle`: Upgrade util to 6.3.6 and scrooge-runtime to 3.1.2
+
+6.4.1
+-----
+
+- `finagle-http`: CookieMap instead of CookieSet
+- `finagle-memcached`: remove items stats test since twemcache does not carry those
+- `finagle-http`: don't choke on HEAD requests
+- `finagle-core`: ReusingPool: fix race between setting Future.never and initiating connect
+- `finagle-thriftmux`: also release services
+- `finagle-http`: Use the correct dispatcher for RichHttp and new API
+- `finagle-exception`: a loadable exception reporter
+- `finagle-core`: make global flags consistently camelCase
+- `finagel-http`: enable tracing by default for Http
+- `finagle-http`: Call super method only if response is not chunked
+- `finagle-core`: Tracing changes to annotate both client and server ip addresses
+- `finagle-http`: Stream interface (i.e. chunked) for HTTP message bodies
+- `finagle-core`: get a resolver instance contained in the main Resolver
+- `finagle-mux`: fix TagMap.iterator
+- `finagle-mdns`: Adding project to sbt
+- `inagle`: Fix doc
+- `finagle-mysql`: refactor endec into proper fsm
+- `finagle`: Update sbt project for (util, ostrich, finagle)
+
+6.4.0
+-----
+
+- `finagle-core`: Add unmanaged cache pool cluster
+- `finagle-core`: Always enable TracingFilter even when no tracers are used.
+- `finagle-core`: cache the cancelled connections in WatermarkPool instead of CachingPool
+- `finagle-core`: Fix behavior of proxy forwarding in StatsReceiver
+- `finagle-core`: Fix usage of RollupStatsReceiver in StatsFactoryWrapper.
+- `finagle-core`: Generalize LoggingFilter
+- `finagle-core`: HeapBalancer: fix handling of unavailable nodes
+- `finagle-core`: Properly synchronize concurrent access to ProxyService state.
+- `finagle-core`: Refactor Heapbalancer, remove usage of per host statsReceiver.
+- `finagle-core`: share worker pools between server and client
+- `finagle-exception`: Fix sourceHost supplied to chickadee exception reporter
+- `finagle-http`: Add HttpConnectHandler and HttpClientCodec in the correct order when setting up an HTTP proxy client.
+- `finagle-http`: add Response(status)
+- `finagle-http`: EncodeBytes/decodeBytes for Request
+- `finagle-http`: Refactor HeaderMap/ParamMap
+- `finagle-memcache`: change to use consistent way to provide failure accrual params
+- `finagle-memcached`: Propagating error message from server to client
+- `finagle-memcached`: support for configuring numReps in KetamaClientBuilder
+- `finagle-mux`: convert tests to use ScalaTest
+- `finagle-mysql`: Ability to deal with non-ascii utf-8 characters
+- `finagle-mysql`: Add ability to pass StatsReceiver to builder
+- `finagle-mysql`: adds support for latin1_bin, paves the way for more charsets.
+- `finagle-mysql`: Encode all the given the error information in the ServerError
+- `finagle-mysql`: Fix improper use of ServiceFactory in Client
+- `finagle-redis`: Fix byte encoding problem with Z(Rev)Rank
+- `finagle-redis`: fixing Nil values in MBulkReplies
+- `Finagle-zipkin`: decoupled sampling logic from ZipkinTracer to make a reusable SamplingTracer
+- `finagle-zipkin`: Improve zipkin trace sampling
+- `finagle-zipkin`: make ZipkinTracer loadable
+- `finagle`: Document metrics
+- `finagle`: Force service loader to return a concrete collection
+- `finagle`: Refactor Future#get to Await.result
+- `finagle`: Upgrade jackson to 1.9.11
+- `finagle`: Upgrade ostrich to 9.1.1
+- `finagle`: Upgrade util to 6.3.4
+
+6.3.0
+-----
+
+- `finagle`: Upgrade util to 6.3.0
+- `finagle-thrift`: SocketAddress when serving an iface
+- `finagle-core`: Specify DefaultTimer when creating a ChannelFactory
+- `finagle-core`: DefaultClient/Server: Do not add TracingFilter if NullTracer is used
+
+6.1.4
+-----
+
+- `finagle-zipkin`: tracing improvements
+- `finagle`: Upgrade util to 6.2.5
+
+6.1.3
+-----
+
+- `finagle-core`: Add BroadcastCounter and BroadcastStat, refactor Broadcast and Rollup Receiver.
+- `finagle`: update sbt, add finagle-exp
+- `finagle-doc`: Add a FAQ, add an entry about CancelledRequestExceptions
+- `finagle-core`: Add client support for proxies that support HTTP CONNECT, such as squid.
+- `finagle-doc`: A few wording fixes in Sphinx doc templates.
+- `finagle-core`: StatsFilter: Check for WriteException-wrapped backup-request losers
+- `finagle-mysql`: bug fixes
+- `finagle`: Update sbt project definition
+- `finagle-core`: Introduce DefaultTracer that load available Tracers via LoadService + Fix equality with NullStatsReceiver
+- `finagle-core`: CachingPool: Do not schedule timer tasks if ttl is Duration.Top
+
+6.1.2
+-----
+
+Released 2013/03/21
+
+- `finagle`: Fix flakey tests
+- `finagle`: fix sbt build
+- `finagle`: Upgrade util to 6.2.4
+- `finagle-core`: Fix reporting bug for pending reqs
+- `finagle-core`: Move Disposable/Managed to util
+- `finagle-core`: Use Future.Nil
+- `finagle-doc`: Improve, add Matt Ho's talk.
+- `finagle-exp`: Add BackupRequestFilter, new backup request filter using response latency quantiles
+- `finagle-http`: Avoid URISyntaxException
+- `finagle-memcached`: Add Replication Cache Client
+- `finagle-mysql`: Make prepareAndExecute and prepareAndSelect useful again.
+- `finagle-mysql`: Make sure we are properly managing prepared statement
+- `finagle-mysql`: Move interfaces outside of protocol package
+- `finagle-redis`: Moved redis server classes from private to public
+- `finagle-thrift`: fix 2.10 build
+
+6.1.1
+-----
+
+Released 2013/03/12
+
+- `doc`: Finagle user guide!
+- `finagle`: Remove finagle's dependence on jerkson.
+- `finagle`: Upgrade Netty to 3.5.12
+- `finagle`: Upgrade scrooge-runtime to 2.4.0
+- `finagle`: Upgrade util to 6.2.2
+- `finagle-core`: com.twitter.finagle.Group: introduce names, use them.
+- `finagle-core`: deprivatize, document Client, Server.
+- `finagle-core`: fix multiple stats bugs.
+- `finagle-core`: Log Finagle's version number on startup.
+- `finagle-core`: RetryingFilter, don't retry on CancelledRequestException.
+- `finagle-http`: New Request object queryString utility functions.
+- `finagle-http`: New Request/Response encode/decode functions.
+- `finagle-memcached`: Actively reestablish zk connection whenever disconnected or expired.
+- `finagle-memcached`: Cache pool cluster not updated since 2nd serverset change.
+- `finagle-memcached`: Don't use deprecated FuturePool.defaultPool.
+- `finagle-mysql`: Add project in the list of deployed jar.
+- `finagle-mysql`: Fix race condition in the authentication process.
+- `finagle-mysql`: Move it to experimental package.
+- `finagle-ostrich4`: Add OstrichExporter to enable Ostrich stats in the new App stack.
+- `finagle-redis`: Add support for INFO command.
+- `finagle-resolver`: additional visibility for Announcers and Resolvers.
+- `finagle-zipkin`: new factory methods.
+
+6.1.0
+-----
+
+Released 2013/01/30
+
+- `finagle`: update util and ostrich dependencies
+- `finagle`: libraries: preliminary 2.10 port/build
+- `finagle`: Tracer use new daemon() flag; get rid of factory. Simplify.
+- `finagle`: refactor clients and servers to be simpler, more logical.
+- `finagle-core`: Provide a reportHostStatsTo API on ClientBuilder that per-host stats will be reported to.
+- `finagle-core`: Use Groups in place of Clusters
+- `finagle-core`: Create a NonShrinkingCluster
+- `finagle-redis`: made zRange... commands work more like the actual redis commands
+- `finagle-stats`: new project that provides a StatsReceiver based on Twitter's Metrics library.
+- `finagle-http`: add new-style client and server, including a primitive URL fetcher
+
+6.0.5
+-----
+
+Released 2013/01/22
+
+- `finagle-core`: basic SOCKS support for finagle clients, intended for use with ssh -D.
+
+6.0.4
+-----
+
+Released 2013/01/22
+
+- `finagle-core`: CachingPool owns connections and caches them even if upstream cancels
+- `finagle-core`: Eliminate varargs overhead in StatsReceiver.time and timeFuture
+- `finagle-core`: LoadBalancerTest: allow the tests to be run with Google Caliper
+- `finagle-core`: make snap on mapped cluster thread-safe
+- `finagle-memcached`: explicitly pass in initial cache nodes when using a a static cluster
+- `finagle-native`: fix up grab_and_path_tomcat_native
+- `finagle-redis`: finagle redis btree sorted set commands
+- `finagle-redis`: Implemented redis HMSET
+- `finagle-redis`: expireAt command
+
+6.0.3
+-----
+
+Released 2012/12/18
+
+- `finagle-mux`: new session protocol
+- `documentation`: document connection management and associated configuration options
+- `finagle-core`: expose newChannelTransport in Codec to allow multiplexing in clients
+- `finagle-http RequestProxy`: proxy response
+
+6.0.2
+-----
+
+Released 2012/12/11
+
+- `TimerSpec, RefcountedSpec`: make deterministic
+- `finagle-core`: JSSE SSL support for intermediate certificates
+- `finagle-core`: push SSLEngine all the way up to the ServerBuilder
+- `finagle-core`: preclude default SourceMonitor in clients
+- `finagle-core`: ReusingPool for pipelined, multiplexed clients
+- `finagle-core`: remove wasteful RichLong allocations in hot path
+- `finagle-core`: move acquire/release of services outside of WatermarkPool's synchronization
+- `finagle-core`: remove unintended reflection-by-refinement-type
+- `finagle-thrift`: actually support multiple protocols
+- `finagle-ostrich4`: configurable delimiter
+- `finagle-redis`: parse case-insensitive commands
+
+6.0.1
+-----
+
+Released 2012/11/26
+
+- Use java.util.ArrayDeque in place of mutable.Queue due to https://issues.scala-lang.org/browse/SI-6690
+
+6.0.0
+-----
+
+Released 2012/11/26
+
+- util 6.0.0 dependency
+- `finagle-core`: new client/server APIs; not yet exposed to users
+
+5.3.23
+------
+
+Released 2012/11/21
+
+- `finagle-spdy`: new codec
+- `finagle-core`: ServiceTimeoutException is now a WriteException (so they can be retried)
+- `finagle-core`: close channels owned by ChannelTransport before failing queues
+- `finagle-core`: share ChannelStatsHandler in clients and servers to avoid excessive stats-related weakrefs
+- `finagle-core`: don't leak Spooled updates in the HeapBalancer
+
+5.3.22
+------
+
+Released 2012/11/08
+
+- `finagle-redis`: String commands
+- `finagle-redis`: collection.Set => collection.immutable.Set per #116
+- `finagle-thrift`: SeqIdFilter: Don't modify thrift requests.
+- `BackupRequestFilter`: experimental service filter to perform backup requests
+
+5.3.20
+------
+
+Released 2012/10/26
+
+- `finagle-redis`: fix zrevrangebyscore (https://github.com/twitter/finagle/issues/114)
+- `finagle-memcached`: fix space leak when using clustering
+- `finagle-core`: special case 1-hosted (static) clients to bypass loadbalancer
+- `finagle-core`: Introduce an experimental buffer-based pool
+
+5.3.19
+------
+
+Released 2012/10/16
+
+- Upgrade ostrich to 8.2.9
+- Upgrade util to 5.3.13
+- Upgrading slf4j to 1.6.1
+- `finagle`: Rm usage of deprecated Predef.error.
+- `finagle-core`: Changed stats name in ChannelStatsHandler from exception msg to getClass.getName
+- `finagle-core`: Add counters to track disconnections due to Idle activity (both read/write)
+- `finagle-core`: Add "adds"/"removes" counters in HeapBalancer to track modifications
+- `finagle-core`: Added name to HeapBalancer init (via exception) if HB size is 0
+- `finagle-core`: Don't log dropped events: they are actually quite numerous.
+- `finagle-kestrel`: Disable failFast for kestrel.
+- `finagle-memcached`: Cluster support within finagle-memcached (phase 2)
+- `finagle-redis`: added new commands
+
+5.3.18
+------
+
+Released 2012/09/27
+
+- `Doc`: update README with working thrift Java example
+- `Doc`: fix compile errors in examples
+- `finagle-http`: fix typo in RequestBuilder API
+- `finagle-stress`: FrontEndServerStress refactor; now generates runnable binary
+- `finagle-core`: add optional `shouldRetry` argument to RetryPolicy.tries
+- `finagle-core`: pools propagate underlying availability correctly
+- `finagle-core`: move fail-fast before the pool. This prevents it from masking errors from the failure accrual mechanism, and is arguably the "correct" placement
+- `finagle-core`: fix argument type in RetryingFilter.apply
+- `finagle-core`: failFast by default; disable for Kestrel
+- `finagle-memcached`: cache-pool specific Cluster implementation
+- `finagle-memcached`: add stat to cache-pool cluster
+- `finagle-redis`: add scan, hscan commands
+- `finagle-redis`: add list commands
+
+5.3.9
+-----
+
+Released 2012/09/07
+
+- `finagle`: Update/fix README
+- `finagle`: Upgrade util to 5.3.10
+- `finagle`: Update guava to v13
+- `finagle-redis`: API v2 + update example
+- `finagle-thrift`: validate connections based on TApplicationException
+- `finagle-core`: SSL: fix connection failure propagation in futures
+
+5.3.8
+-----
+
+2012/08/24
+
+
+- `finagle-core`: Upgrade to Netty 3.5.5
+
+5.3.7
+-----
+
+Released 2012/08/24
+
+- `Doc`: Fix mistake in finagLe README that claimed Future objects have a getContentAsync method
+- `Doc`: Fix typos in README
+- `finagle-thrift`: ThriftChannelBufferDecoder: fix for composite buffers
+- `finagle-mysql`: MySQL codec from Ruben Oanta.
+- `finagle-core`: add isSuccess to FailureAccrualFactory
+- `finagle-http`: Fix file extension bug in finagle-http
+
+5.3.6
+-----
+
+Released 2012/06/17
+
+- `Doc`: Typos
+- `finagle-core`: fix canceling recurring timers
+- `finagle`: kill finagle-memcached-hadoop
+- `finagle-memcached`: in-process memcache server now supports expiry
+- `finagle-memcached`: Adding key length validation and refactor validation logic.
+
+5.3.5
+-----
+
+Released 2012/08/10
+
+- `finagle-core`: Fixed stats visibility
+- `finagle-serversets`: allow specification of an additional endpoint name in ZookeeperServerSetCluster
+- `finagle-serversets`: ZookeeperServerSetCluster.join now return an EndpointStatus + Named/Daemonized init thread
+- `finagle-core`: Changed Cache's internal implementation from queue to deque (to allow LIFO behavior)
+- `finagle-core`: cluster initialization honors global timeout in ClientBuilder.
+- `finagle-stress`: finagle: kill obsolete benchmark
+
+5.3.4
+-----
+
+Released 2012/08/02
+
+- `finagle`: patch public release of OSS libraries; catch up sbt
+- `finagle-core`: netty 3.5.3.Final
+- `finagle-core`: Timer: address review comments, fix tiny race
+
+5.3.3
+-----
+
+Released 2012/07/31
+
+- `finagle-core`: Timer: dispose timeouts on cancellation
+
+5.3.2
+-----
+
+Released 2012/07/31
+
+- `finagle-core`: Fix critical bug in Timer by refactoring the Timer model
+- `finagle`: Add OWNERS file to finagle-memcached, finagle-redis
+- `finagle-redis`: add keys and hkeys
+- `finagle-zipkin`: Add a debug flag, add an i64 bit field to the thrift request header struct and as a http header
+- `finagle-core`: SourceTrackingMonitor to report whether it's in client or server
+- `finagle-zipkin`: Add duration to the the JVM gc annotation.
+
+5.3.1
+-----
+
+Released 2012/07/20
+
+- `finagle-serversets`: Use authenticated zookeeper client suggested for new SD cluster migration
+- `finagle-thrift`: seqid filter: improved tests
+- `finagle-zipkin`: Add duration to annotations for timing operations
+- `finagle-serversets`: bump up server-set version to 1.0.10 (latest) in finagle-serversets
+
+5.3.0
+-----
+
+Released 2012/06/25
+
+- `finagle-core`: ClientBuilder and ServerBuilder's MonitorFilter to report exception sources
+- `finagle-test`: Add TaskTrackingTimer benchmark
+- `finagle-thrift`: SeqIdFilter: helpful exceptions
+- `Dispatcher`: all write exceptions are wrapped with WriteException
+
+5.1.0
+-----
+
+Released 2012/06/14
+
+
+- `finagle`: Upgrade util to 5.2.0, ostrich to 8.1.0
+- `finagle-redis`: extend codec
+- `finagle-memcache`: first phase of serverset support
+- `finagle-b3`: we are using zipkin now
+- `finagle-kestrel`: Kill com.twitter.concurrent.Channel
+- `finagle-core`: JvmFiler, trace jvm events
+
+5.0.2
+-----
+
+Released 2012/06/01
+
+
+- `finagle-core`: Refactor the new way of managing resources
+- `finagle-core`: Add capability to drain dispatcher on expire
+- `finagle-core`: ZookeeperServersetCluster notify client when underlying Cluster is ready
+- `finagle-exception`: Upgrade jerkson to 0.5.0 and streamyj to 0.4.1
+
+5.0.0
+-----
+
+Released 2012/05/25
+
+
+- Upgrade to scala 2.9.2
+- `finagle-core`: FailFast, do not admit requests when marked failed
+- `finagle-redis`: now return tuples and doubles
+- `finagle-memcached`: record client recv annotation after hit/miss
+- `finagle-core`: expand exception chain in StatsFilter
+
+4.0.0
+-----
+
+Released 2012/05/08
+
+
+- `http`: add AddResponseHeadersFilter, CorsFilter
+- `finagle-redis`: Add ZCard, ZRem, ZRevRange, ZRevRangeByScore commands
+- `finagle-memcached`: Added b3 annotations for key hits/misses
+- `finagle-memcached`: getResult/getsResult for java
+- `finagle-http`: fix client codec
+- `HeapBalancer`: close services that are removed from cluster
+- `finagle-redis`: add tracing and stats support
+- `finagle-http`: Add the client address for http traces. Also record uri after service name has been set
+- `finagle-memcached`: more efficient implementation of GetResult.merged
+- `finagle-redis`: return pairs for hgetall, zrangebyscores, zrevrangebyscores cmds
+- `finagle-core`: introduce Transports and Dispatchers
+- `tracing`: annotate client connection when tracing
+- update to netty 3.4.1.Final
+- prevent tenuring of response objects for responses from previously idle connections
+- `finagle-redis`: add quit command
+- `finagle-http`: add service multiplexer
+- friendlier java interface for retries
+
+3.0.0
+-----
+
+Released 2012/03/14
+
+
+- `ServiceToChannelHandler`: keep track of shutdowns with pending replies, don't monitor errors that occur after cancellation.
+- Add two received_bytesm sent_bytes to per-channel stats.
+- `http`: Add wwwAuthenticate(=) and isXmlHttpRequest
+- `http`: CancelledRequestExceptions become 499s
+- `clients`: experimental Fail-Fast mode (ClientBuilder.expFailFast(true))
+- `b3`: Only log that a span was unfinished if we actually found one
+- `thrift`: better support for one-way calls
+- `server`: option for cancellation on hangup (default=true)
+- `codecs`: improved support for multiplexed protocols
+- upgrade to netty 3.4.0.alpha1 which fixes connect timer resolution issues. Trustin says this should be as stable as 3.3.1.Final
+- `serversets`: allow for additional endpoints
+- `tests`: use true ephemeral ports instead of RandomSocket
+- `memcache stress`: use new command line flag library from commons
+- `thrift`: concatenate arrays with System.arraycopy
+- `memached`: fix bug wherein we made requests with empty keys on retries
+
+2.0.1
+-----
+
+Released 2012/03/01
+
+
+- `commons-stats`: memoize counters
+- `cluster`: don't reuse adds; keep many values per key
+- `clientbuilder`: buffer handlers to avoid deadlock
+
+2.0.0
+-----
+
+Released 2012/02/27
+
+
+- unify client and server factories
+- `memcache stress test`: one connection per process
+- `b3`: make tests deterministic
+- upgrade to newest util (and to Guava r11)
+
+1.11.1
+------
+
+Released 2012/02/15
+
+
+- `HeapBalancer`: safely remove services from cluster when they have requests in flight
+- `http`: speed up logging
+- `core`: keep track of handler walltimes
+
+1.11.0
+------
+
+Released 2012/02/13
+
+
+- `finagle-redis`: publish.
+- `http`: Message.mediaType=: no longer sets charset to utf-8
+- `http`: Message.setContentType: defaults charset to utf-8
+- `http`: added Message.charset, Message.charset=
+- Refactor resource management inside of the builders, making lifetimes explicit
+- Generic cluster API, support in the HeapBalancer for dynamic hosts list; remove other load balancers
+- `redis`: memcache.Client-style interface
+- `netty`: update to 3.3.1.Final, and add NPN TLS extension support
+- `b3`: flush span if timeout occurs
+- `b3`: java friendly tracer API
+- `stress/example`: "topo", a minimal appserver-like topology for testing
+- `memcache`: tunable example for benchmarking, testing
+- `ServerBuilder`: major refactor & simplification
+- `SummarizingStatsReceiver`: fix bug where sort didn't operate over a stable collection
+
+1.10.0
+------
+
+Released 2012/01/24
+
+
+- `http`: Message.withX methods now have parameterized return types
+- `memcached`: (Ketama) host ejection
+- Noisier, more robust monitoring.
+- `zk cluster`: avoid potential infinite loop
+- `http streaming`: better detection, handling of dead channels
+- `http`: always encode output as UTF-8
+- `stream`: use offer/broker for duplex stream
+- `redis`: imported finagle redis client from Tumblr. not yet published.
+
+1.9.12
+------
+
+Released 2012/01/05
+
+
+- `SSLEngine`: do not reuse between connections
+- `ServerBuilder.Server`: localAddress to get ephemeral port values
+- More detailed client stats
+- `kestrel`: parse parseStatsLines
+- `FailFastFactory`: new fast-fail strategy with maxOutstandingConnections
+- `exceptions`: add peer information to connection failures, add service name to all exceptions
+- `fixes`: space leak in stats, ReliableDuplexFilter lazy load ordering
+- `b3`: allow the user to specify sample rate
+- `exception reporter`: share scribe connection across instances
+- `finagle-ostrich`: remove, it's obsoleted by finagle-ostrich4
+
+1.9.10
+------
+
+Released 2011/12/02
+
+- update to util 1.12.7
+
+1.9.9
+-----
+
+Released 2011/12/01
+
+- update to util 1.12.6
+
+1.9.8
+-----
+
+Released 2011/11/30
+
+- upgrade to netty 3.2.7.Final
+- `streaming`: support HTTP/1.0
+- `native`: fix content-length header
+
+1.9.7
+-----
+
+Released 2011/11/29
+
+- `http`: Propagate CancelledRequestException rather than continuing
+- `thrift`: deprecated LookupContext, using finagle.thrift.ClientId
+- use monitors where applicable (composable widgets for handling exceptions)
+- `memcache`: PHPMemCacheClient
+- make RetryingFilter usable from Java
+- `thrift`: convert uncaught application exceptions into TApplicationExceptions on the wire
+- NoStacktrace.getStackTrace() returns non-empty stacktrace array
+- kill off openConnectionsHealthThresholds (unused)
+
+1.9.6
+-----
+
+Released 2011/11/08
+
+- `SSL`: make native provider bootstrapping code work; refactor 'Ssl' singleton
+- `tracing`: Update configurations and libraries to use tracer factory introduced to make it possible to release resources properly in tracers
+- `finagle-thrift`: connection options + client id
+- a more flexible retry filter
+
+1.9.5
+-----
+
+Released 2011/11/04
+
+- `ExpiringService`: add stats for idle and lifetime expiration. Deactivate() regardless of latch counter
+- `Filters`: don't apply refcounts on composition, do it only (and always) in the builder
+- Count pending timeouts, and export them
+- `ChannelService`: release services when `prepareChannel` fails. This fixes a connection leak
+- `WatermarkPool`: flush waiters on creation failure. This fixes a condition wherein we'd keep waiters unnecessarily.
+- `Timeout exceptions`: include service name
+- Suppress excessive logging of the exceptions that mostly caused by unreliable client connections.
+- `memcached`: Add generic type support (via Client.adapt), and Array[Byte] and String instances
+- `finagle-stream`: do not admit concurrent requests
+- `Tracing`: Add release method to Tracer trait, add tracerFactory to builders, deprecate tracer on builders
+
+1.9.4
+-----
+
+Released 2011/10/24
+
+- `Service`: response Future will now be cancelled if the client disconnects
+- use static exceptions for TimedOutRequestException
+- `kestrel`: Cancel request Future on close in kestrel ReadHandle
+- `exception cleanup`: wrap all Channel exceptions with their underlying exception. This makes UnknownChannelExceptions in particular easier to debug
+- `Friendlier exceptions`: In order to give very specific error messages to timeouts in finagle (so beginners know which settings in the client and server builder caused them), I'm adding lots of human-readable messages to the various TimeoutExceptions.
+- `some timer bug fixes, particularly`: TimerToNettyTimer: actually cancel underlying task.
+
+1.9.2
+-----
+
+Released 2011/10/14
+
+- `tracing`: Change SpanId to use RichU64String
+- `tracing`: Trace.{enable,disable}
+- `http`: http.RequestBuilder
+- `http`: add common media types
+
+1.9.1
+-----
+
+Released 2011/09/28
+
+- `memcached`: new interface for partial results (ie. retrieval failures + successes)
+- `tracing`: set service name in the endpoint instead of the span
+- more idiomatic KetamaClientBuilder constructor
+- `tracing`: convenience methods to add binary annotations
+- `finagle-http`: misc. fixes
+- HeapBalancer - a new lg n load balancer (asymptotically more efficient!)
+- upgrade to ostrich 4.9.0
+
+1.9.0
+-----
+
+Released 2011/08/29
+
+- `http`: new http library
+
+1.8.4
+-----
+
+Released 2011/08/23
+
+- `tracing`: fixed space leak
+- `ssl`: integrate openssl sslengine
+- `thrift`: update to sbt-thrift 2.0.1
+- `stream`: always release server when we close
+- `serversets`: upgraded to guava-r09
+- `core`: expose stats on failed retries
+
+1.8.3
+-----
+
+Released 2011/08/12
+
+- `thrift`: add a server-side buffered codec; fix tracing issue in buffered codec
+- `http`: workaround hole in netty logic to guarantee maxRequestSize
+- `serversets`: don't block on ClientBuilder construction
+- `ostrich4`: update to ostrich 4.8.2
+- `streaming`: reimplement HTTP chunked streaming in terms of offer/broker
+- `kestrel`: buffered & merging of ReadHandles
+
+1.8.1
+-----
+
+Released 2011/08/05
+
+- upgrade to netty 3.2.5.Final
+- `kestrel`: fix visibility of ResultWithCAS
+- `kestrel`: Client.{read,write}, Client.readReliably, MultiReader: suite of kestrel streaming readers (including grabby-hands replacements) using Offer/Broker
+- `kestrel`: don't render timeouts > 2^31-1
+- `tracing`: fix sampling bug
+- `tracing`: trace the kestrel client
+- quench unecessary error reporting
+
+1.8.0
+-----
+
+Released 2011/08/02
+
+- `SSL`: perform hostname validation in the client. this is the reason for the minor bump: we change the .tls() ClientBuilder signature
+- introduce util-codec dependency for use of the apache commons base 64 codec
+
+1.7.5
+-----
+
+Released 2011/07/29
+
+
+- make it easier to use the NullStatsReceiver from java
+- convert WriteException to a case class (github issue 25)
+- add _root_. to java.util.Map import. reorder imports
+- Upgrade finagle-common-stats to twitter-common-stats 0.0.16
+- encode more HTTP codec errors
+- adding cardinality to ServiceException
+- `finagle CachingPool`: limit size to highWatermark - lowWatermark
+- `exception reporting`: gzipping trace strings
+- set ostrich version of finagle-ostrich4 to 4.7.3
+- `ChannelServiceFactory`: encode exceptions from bootstrap.connect()
+
+1.7.4
+-----
+
+Released 2011/07/22
+
+
+- `http`: convert codec exceptions into 4xx errors; report them as such upstream
+- `memcache`: `gets` and `cas` support.
+
+1.7.3
+-----
+
+Released 2011/07/19
+
+
+- `fix`: 1.7.2 introduced a regression in the pool that may, under certain circumstances, admit connections beyond the high watermark.
+- quench exception for setting multiple Promise values when racing with write errors.
+- Adds tracing support for the Memcached client. This only creates the client side annotations, no support for passing along ids and such to the memcached server.
+
+
+1.7.2
+-----
+
+Released 2011/07/18
+
+
+- support end-to-end cancellation in finagle clients; fixes possible pool starvation conditions, and allows clients to cancel requests and reclaim resources
+- `end-to-end timeouts`: introduce, .connectTimeout and .timeout. .connectTimeout is the end-to-end connection timeout (includes acquisition & TCP time), .timeout is an end-to-end request time: no requests will take longer
+- some doc fixes
+- misc. bug fixes

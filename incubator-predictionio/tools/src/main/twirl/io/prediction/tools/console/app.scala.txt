@@ -1,0 +1,74 @@
+Usage: pio app new [--id <value>] [--description <value>] [--access-key <value>]
+                   <name>
+
+Create a new app key to app ID mapping.
+
+  --id <value>
+      Specify this if you already have data under an app ID.
+  --description <value>
+      Description of the new app.
+  --access-key <value>
+      Specify a custom default access key.
+  <name>
+      App name.
+
+
+Usage: pio app list
+
+List all apps.
+
+
+Usage: pio app show <name>
+
+Show details of an app.
+
+  <name>
+      App name.
+
+
+Usage: pio app delete <name> [--force]
+
+Name of the app to be deleted.
+
+  <name>
+      App name.
+  --force, -f
+      Delete data without prompting for confirmation
+
+
+Usage: pio app data-delete <name> [--channel <name>] [--all] [--force]
+
+Delete data of an app.
+
+  <name>
+      App name.
+  --channel <name>
+      Delete data of the specified channel (default channel if not specified)
+  --all
+      Delete all data of this app (including both default and all channels)
+  --force, -f
+      Delete data without prompting for confirmation
+
+
+Usage: pio app channel-new <name> <channel>
+
+Create a new channel for the app.
+
+  <name>
+      App name.
+
+  <channel>
+      Channel name to be created.
+
+
+Usage: pio app channel-delete <name> <channel> [--force]
+
+Delete a channel for the app.
+
+  <name>
+      App name.
+
+  <channel>
+      Channel name to be deleted.
+  --force, -f
+      Delete data without prompting for confirmation

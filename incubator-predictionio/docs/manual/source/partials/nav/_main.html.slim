@@ -1,0 +1,7 @@
+nav#nav-main
+  ul
+    - data.nav.main.root.each do |node|
+      = partial 'nav/node', locals: { node: node, level: 1 }
+    - unless build?
+      - data.nav.build.root.each do |node|
+        = partial 'nav/node', locals: { node: node, level: 1 }

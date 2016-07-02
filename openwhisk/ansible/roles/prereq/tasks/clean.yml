@@ -1,0 +1,14 @@
+---
+# Remove prereq packages
+
+- name: remove docker-py
+  pip: 
+    name: docker-py
+    state: absent
+  become: true
+
+- name: remove httplib2
+  pip: 
+    name: httplib2
+    state: absent
+  become: true

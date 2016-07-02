@@ -1,0 +1,32 @@
+body { // for higher priority
+  .alert-message {
+    margin: 1em 0 1em 0;
+    display: block;
+    width: auto;
+    overflow:hidden;
+
+    p {
+      padding: 22px;
+      margin: 0;
+    }
+
+    &.info {
+      @include alert-border ($info-color);
+    }
+    &.success {
+      @include alert-border ($success-color);
+    }
+    &.warning {
+      @include alert-border ($warning-color);
+    }
+    &.danger {
+      @include alert-border ($danger-color);
+    }
+    &.note {
+      @include alert-border ($note-color);
+    }
+    &.todo {
+      @include alert-border ($todo-color);
+    }
+  }
+}

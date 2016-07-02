@@ -1,0 +1,60 @@
+div.user_lists h2 {
+  font-size: 1.1em;
+  font-weight: bold;
+  line-height: 1.5em;
+  margin-bottom: 0.5em;
+}
+div.user_lists h2::before {
+  font-size: 1.5em;
+}
+#lichess div.user_lists,
+#lichess div.user_lists div.group {
+  overflow: hidden;
+  width: 100%;
+}
+#lichess div.user_lists div.user_top {
+  float: left;
+  width: 31%;
+  margin-bottom: 1em;
+  margin-right: 3%;
+}
+#lichess div.user_lists div.user_top:last-child {
+  margin-right: 0;
+}
+div.side div.user_top {
+  margin-top: 1em;
+}
+div.side div.user_top li {
+  display: block;
+  margin: 5px 0;
+}
+div.side a.more {
+  display: block;
+  text-align: right;
+  margin-top: 0.5em;
+}
+div.user_lists div.user_top table {
+  width: 100%;
+}
+div.user_lists div.user_top td {
+  padding: 2px 0;
+}
+div.user_lists .tournament_winners td:first-child {
+  max-width: 112px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#site_header div.user_lists div.user_top td {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+div.user_lists div.user_top td:last-child {
+  text-align: right;
+}
+
+div.big_user_list > a {
+  float: left;
+  width: 25%;
+  margin-bottom: 5px;
+}
